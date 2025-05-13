@@ -53,10 +53,10 @@ const iPortal = () => {
     open[0].click();
 
     // get links
-    const links = getElement(false, "row form-group col-12 col-md-11")[9].children;
-    console.log(links);
+    const links = getElement(false, "col-12 col-md-11")[10].children;
+    // console.log(getElement(false, "col-12 col-md-11")[10]);
     const all = [...links].map((i) => i?.children[0]?.href);
-    console.log(all);
+
     press.click();
     [...links].map(
       (item) => item?.children[0] && window.open(item?.children[0]?.href)

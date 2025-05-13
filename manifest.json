@@ -2,8 +2,15 @@
 	"name": "Tools",
 	"description": "This extension is made with love and used to help a bit to all of our instructors when they are on the playground - SHAKIL & FARHAN ❤️‍🔥",
 	"version": "0.1.1",
-	"permissions": ["activeTab"],
-	"browser_action": {
+	"permissions": ["activeTab", "scripting"],
+	"host_permissions": [
+		"*://*.programming-hero.com/*",
+		"*://meet.google.com/*",
+		"*://github.com/*",
+		"*://*.netlify.app/*",
+		"*://*.surge.sh/*"
+	],
+	"action": {
 		"default_icon": "fire-love.png",
 		"default_popup": "index.html"
 	},
@@ -27,5 +34,5 @@
 			]
 		}
 	],
-	"manifest_version": 2
+	"manifest_version": 3
 }
