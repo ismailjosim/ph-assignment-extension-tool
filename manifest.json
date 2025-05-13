@@ -1,7 +1,7 @@
 {
 	"name": "Tools",
 	"description": "This extension is made with love and used to help a bit to all of our instructors when they are on the playground - SHAKIL & FARHAN ❤️‍🔥",
-	"version": "0.1.1",
+	"version": "1.1.1",
 	"permissions": ["activeTab", "scripting"],
 	"host_permissions": [
 		"*://*.programming-hero.com/*",
