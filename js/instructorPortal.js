@@ -5,14 +5,14 @@ const iPortal = () => {
 
   displayButtons(
     openModal +
-      pressE +
-      focus +
-      submitMark +
-      assimentAdd +
-      unassign +
-      closeModal +
-      arrowKey +
-      reload
+    pressE +
+    focus +
+    submitMark +
+    assimentAdd +
+    unassign +
+    closeModal +
+    arrowKey +
+    reload
   );
 
   // instructor dashboard buttons
@@ -53,7 +53,8 @@ const iPortal = () => {
     open[0].click();
 
     // get links
-    const links = getElement(false, "col-12 col-md-11")[8].children;
+    const links = getElement(false, "row form-group col-12 col-md-11")[9].children;
+    console.log(links);
     const all = [...links].map((i) => i?.children[0]?.href);
     console.log(all);
     press.click();
