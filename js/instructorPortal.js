@@ -53,7 +53,9 @@ const iPortal = () => {
     open[0].click();
 
     // get links
-    const links = getElement(false, "col-12 col-md-11")[10].children;
+    const links = getElement(false, "col-12 col-md-11")[9].children;
+    // console.log(links);
+    // const links = getElement(false, "col-12 col-md-11")[10].children;
     // console.log(getElement(false, "col-12 col-md-11")[10]);
     const all = [...links].map((i) => i?.children[0]?.href);
 
@@ -115,8 +117,10 @@ const iPortal = () => {
     const checkbox = getElement(true, "thead-checkbox");
     const assignBtn = getElement(
       false,
-      "low-op-btn float-right btn btn-outline-primary"
-    )[0];
+      "low-op-btn btn btn-outline-primary"
+    );
+
+
     checkbox.click();
     assignBtn.click();
     const okBtn = getElement(
