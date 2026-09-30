@@ -111,4 +111,4 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 ## 👨‍💻 Contributors
 
 - **[ismailjosim](https://www.ismailjosim.com/)** — *Modern HUD Redesign, Batch Assignment Automation, Multi-Tab Link Opening, Cross-Tab Storage & GitHub Deadline Intelligence* 🚀
-- **SHAKIL** & **FARHAN** — *Original Authors & Creators* ❤️‍🔥
+- **SHAKIL** & **FARHAN** — *Original Authors & Creators* ❤️🔥
