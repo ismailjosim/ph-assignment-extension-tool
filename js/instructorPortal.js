@@ -1,18 +1,18 @@
 const iPortal = () => {
   let isActiveArrowKeys = JSON.parse(
-    localStorage.getItem("tools-activeArrowKeys")
+    localStorage.getItem("tools-activeArrowKeys"),
   );
 
   displayButtons(
     openModal +
-    pressE +
-    focus +
-    submitMark +
-    assimentAdd +
-    unassign +
-    closeModal +
-    arrowKey +
-    reload
+      pressE +
+      focus +
+      submitMark +
+      assimentAdd +
+      unassign +
+      closeModal +
+      arrowKey +
+      reload,
   );
 
   // instructor dashboard buttons
@@ -30,57 +30,185 @@ const iPortal = () => {
     const inputMark = getElement(true, "Mark");
     const insertBtn = getElement(true, "insertBtn");
     if (insertBtn) insertBtn.click();
-    const suggetMark = document
-      .getElementsByClassName("m-2 w-50 markSuggestions")[0]
-      .innerText.split(" ")[0];
-    navigator.clipboard.writeText(parseInt(suggetMark));
-    inputMark.focus();
+    const suggestions = document.getElementsByClassName(
+      "m-2 w-50 markSuggestions",
+    );
+    if (suggestions && suggestions[0]) {
+      const suggetMark = suggestions[0].innerText.split(" ")[0];
+      navigator.clipboard.writeText(parseInt(suggetMark));
+    }
+    if (inputMark) inputMark.focus();
   };
 
   // ass submit function
   const submitAss = () => {
     const submitButtonPrimary = getElement(false, "btn px-4 btn-primary")[0];
-    submitButtonPrimary.click();
+    if (submitButtonPrimary) {
+      submitButtonPrimary.click();
+    }
   };
 
   // open ass function
   const openAss = () => {
-    const open = getElement(false, "btn btn-icon btn-eye-icon btn-primary");
+    const open =
+      document.querySelector("tbody .btn-eye-icon.btn-secondary") ||
+      document.querySelector("tbody button .fa-eye")?.closest("button") ||
+      getElement(false, "btn btn-icon btn-eye-icon btn-primary")[0];
     const ok = getElement(false, "swal-button swal-button--confirm")[0];
     if (ok) {
       ok.click();
     }
-    open[0].click();
+    if (open) {
+      open.click();
+    }
 
-    // get links
-    const links = getElement(false, "col-12 col-md-11")[9].children;
-    // console.log(links);
-    // const links = getElement(false, "col-12 col-md-11")[10].children;
-    // console.log(getElement(false, "col-12 col-md-11")[10]);
-    const all = [...links].map((i) => i?.children[0]?.href);
+    let opened = false;
 
-    press.click();
-    [...links].map(
-      (item) => item?.children[0] && window.open(item?.children[0]?.href)
-    );
+    const extractAndOpenLinks = () => {
+      if (opened) return true;
+
+      // Target the assignment submission data container
+      const submissionData = document.querySelector(
+        ".assignment-evaluation-form__submission-data",
+      );
+      if (!submissionData) return false;
+
+      // Extract all links within submission data
+      const anchors = submissionData.querySelectorAll("a");
+      const urls = [];
+
+      anchors.forEach((a) => {
+        const href = a.getAttribute("href") || a.href;
+        if (
+          href &&
+          (href.startsWith("http://") || href.startsWith("https://"))
+        ) {
+          urls.push(href.trim());
+        }
+      });
+
+      // Fallback: If no <a> tag href found, extract any URLs from text content
+      if (urls.length === 0) {
+        const text =
+          submissionData.innerText || submissionData.textContent || "";
+        const matches = text.match(/https?:\/\/[^\s"'<>]+/g);
+        if (matches) {
+          matches.forEach((url) => urls.push(url.trim()));
+        }
+      }
+
+      const uniqueUrls = [...new Set(urls)];
+
+      if (uniqueUrls.length > 0) {
+        opened = true;
+
+        // Extract submission details & deadlines from the open modal
+        const modal =
+          submissionData.closest(".modal-content, .modal-body, form, .card") ||
+          document.querySelector(".modal-content, .modal-body") ||
+          document.body;
+        const modalText = modal ? modal.innerText || modal.textContent || "" : "";
+
+        let firstDeadline = null;
+        let firstMarks = 60;
+        let secondDeadline = null;
+        let secondMarks = 60;
+        let submittedAt = null;
+        let resubmittedAt = null;
+
+        const firstMatch = modalText.match(
+          /First deadline[^\d]*(\d+)\s*marks[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
+        );
+        if (firstMatch) {
+          firstMarks = parseInt(firstMatch[1], 10);
+          firstDeadline = firstMatch[2].trim();
+        }
+
+        const secondMatch = modalText.match(
+          /Second deadline[^\d]*(\d+)\s*marks[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
+        );
+        if (secondMatch) {
+          secondMarks = parseInt(secondMatch[1], 10);
+          secondDeadline = secondMatch[2].trim();
+        }
+
+        const subMatch = modalText.match(
+          /Submitted at[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
+        );
+        if (subMatch) {
+          submittedAt = subMatch[1].trim();
+        }
+
+        const resubMatch = modalText.match(
+          /Resubmitted at[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
+        );
+        if (resubMatch && !resubMatch[0].toLowerCase().includes("not resubmitted")) {
+          resubmittedAt = resubMatch[1].trim();
+        }
+
+        const submissionPayload = {
+          firstDeadline,
+          firstMarks,
+          secondDeadline,
+          secondMarks,
+          submittedAt,
+          resubmittedAt,
+          timestamp: Date.now()
+        };
+
+        if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+          const toStore = { latestSubmission: submissionPayload };
+          uniqueUrls.forEach((u) => {
+            const repoMatch = u.match(/github\.com\/([^\/]+\/[^\/\.]+)/i);
+            if (repoMatch) {
+              toStore[`repo_${repoMatch[1].toLowerCase()}`] = submissionPayload;
+            }
+          });
+          chrome.storage.local.set(toStore);
+        }
+
+        if (press) {
+          press.click();
+        }
+        uniqueUrls.forEach((url) => {
+          window.open(url, "_blank");
+        });
+        return true;
+      }
+
+      return false;
+    };
+
+    // Try immediately
+    if (extractAndOpenLinks()) return;
+
+    // Retry periodically if modal / submission data takes time to render
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (extractAndOpenLinks() || attempts >= 30) {
+        clearInterval(interval);
+      }
+    }, 100);
   };
 
   // close opened ass function
   const closeAss = () => {
     const close = getElement(false, "btn btn-close");
-    close[0].click();
+    if (close && close[0]) {
+      close[0].click();
+    }
   };
 
   // change arrowKey btn status function
   const changeArrowKey = () => {
+    if (!arrowKeyBtn) return;
     if (isActiveArrowKeys) {
-      arrowKeyBtn.classList.add("btn-danger");
-      arrowKeyBtn.classList.remove("btn-secondary");
+      arrowKeyBtn.className = "tool-btn tool-btn-arrow-active";
       arrowKeyBtn.innerText = "👨‍👩‍👧‍👦";
       arrowKeyBtn.title = "Now you can use arrow keys";
     } else {
-      arrowKeyBtn.classList.remove("btn-danger");
-      arrowKeyBtn.classList.add("btn-secondary");
+      arrowKeyBtn.className = "tool-btn tool-btn-arrow-inactive";
       arrowKeyBtn.innerText = "👨";
       arrowKeyBtn.title = "Now you are pure single";
     }
@@ -88,66 +216,141 @@ const iPortal = () => {
   changeArrowKey();
 
   // press focus
-  focusButton.addEventListener("click", function () {
-    addMark();
-  });
+  if (focusButton) {
+    focusButton.addEventListener("click", function () {
+      addMark();
+    });
+  }
 
   // press submit
-  submitMarkSecondary.addEventListener("click", function () {
-    submitAss();
-  });
+  if (submitMarkSecondary) {
+    submitMarkSecondary.addEventListener("click", function () {
+      submitAss();
+    });
+  }
 
   // press to open 1st assignment
-  modalOpen.addEventListener("click", function () {
-    openAss();
-  });
+  if (modalOpen) {
+    modalOpen.addEventListener("click", function () {
+      openAss();
+    });
+  }
 
   // press toclose the Modal window
-  modalClose.addEventListener("click", function () {
-    closeAss();
-  });
+  if (modalClose) {
+    modalClose.addEventListener("click", function () {
+      closeAss();
+    });
+  }
 
   // press ]
-  press.addEventListener("click", function () {
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "]" }));
-  });
+  if (press) {
+    press.addEventListener("click", function () {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "]" }));
+    });
+  }
 
   //add assignment
-  addAssignment.addEventListener("click", function () {
-    const checkbox = getElement(true, "thead-checkbox");
-    const assignBtn = getElement(
-      false,
-      "low-op-btn btn btn-outline-primary"
-    );
+  if (addAssignment) {
+    addAssignment.addEventListener("click", function () {
+      const checkbox =
+        document.getElementById("thead-checkbox") ||
+        document.querySelector("th input[type='checkbox']");
 
+      if (checkbox) {
+        checkbox.click();
+      }
 
-    checkbox.click();
-    assignBtn.click();
-    const okBtn = getElement(
-      false,
-      "swal-button swal-button--confirm swal-button--danger"
-    )[0];
+      // Helper to find the "Assign to me" button
+      const findAssignBtn = () => {
+        // 1. Exact new class from updated portal
+        const classBtn = document.querySelector(
+          ".assignment-list-table__toolbar-button, .primary-button.assignment-list-table__toolbar-button",
+        );
+        if (classBtn) return classBtn;
 
-    okBtn.click();
-  });
+        // 2. By text content "Assign to me"
+        const allButtons = document.querySelectorAll("button");
+        for (const b of allButtons) {
+          if (
+            b.innerText &&
+            b.innerText.toLowerCase().includes("assign to me")
+          ) {
+            return b;
+          }
+        }
+
+        // 3. Fallback to old class
+        const oldBtn = document.getElementsByClassName(
+          "low-op-btn btn btn-outline-primary",
+        )[0];
+        if (oldBtn) return oldBtn;
+
+        return null;
+      };
+
+      // Helper to confirm sweetalert / confirmation modal
+      const confirmDialog = (maxAttempts = 25) => {
+        let attempts = 0;
+        const interval = setInterval(() => {
+          attempts++;
+          const okBtn =
+            document.querySelector(".swal-button--confirm") ||
+            document.querySelector(".swal2-confirm") ||
+            document.querySelector(".swal-button.swal-button--danger") ||
+            [...document.querySelectorAll("button")].find(
+              (b) =>
+                b.classList.contains("swal-button") ||
+                b.innerText.trim() === "OK" ||
+                b.innerText.trim() === "Yes" ||
+                b.innerText.trim().toLowerCase().includes("confirm"),
+            );
+
+          if (okBtn) {
+            okBtn.click();
+            clearInterval(interval);
+          } else if (attempts >= maxAttempts) {
+            clearInterval(interval);
+          }
+        }, 100);
+      };
+
+      // Slight delay so the selection state updates before clicking Assign to me
+      setTimeout(() => {
+        const assignBtn = findAssignBtn();
+        if (assignBtn) {
+          assignBtn.click();
+          confirmDialog();
+        }
+      }, 150);
+    });
+  }
 
   //to unassign an assignment
-  unAssign.addEventListener("click", () => {
-    const open = getElement(false, "btn btn-icon btn-eye-icon btn-primary")[0];
-    open.click();
-    [...document.getElementsByClassName("btn btn-primary")]
-      .find((item) => item.innerText == "Unassigned To me")
-      .click();
-    const ok = getElement(false, "swal-button swal-button--confirm")[0];
-    ok.click();
-  });
+  if (unAssign) {
+    unAssign.addEventListener("click", () => {
+      const open = getElement(
+        false,
+        "btn btn-icon btn-eye-icon btn-primary",
+      )[0];
+      if (open) open.click();
+      const unassignBtn = [
+        ...document.getElementsByClassName("btn btn-primary"),
+      ].find((item) => item.innerText == "Unassigned To me");
+      if (unassignBtn) unassignBtn.click();
+      const ok = getElement(false, "swal-button swal-button--confirm")[0];
+      if (ok) ok.click();
+    });
+  }
 
   // press to toggle use arrowKeys
-  arrowKeyBtn.addEventListener("click", () => {
-    isActiveArrowKeys = !isActiveArrowKeys;
-    localStorage.setItem("tools-activeArrowKeys", isActiveArrowKeys);
-    changeArrowKey();
-  });
+  if (arrowKeyBtn) {
+    arrowKeyBtn.addEventListener("click", () => {
+      isActiveArrowKeys = !isActiveArrowKeys;
+      localStorage.setItem("tools-activeArrowKeys", isActiveArrowKeys);
+      changeArrowKey();
+    });
+  }
 
   // press focus and submit button  (< | >)
   document.addEventListener("keydown", function (e) {
@@ -173,3 +376,5 @@ const iPortal = () => {
     }
   });
 };
+
+window.iPortal = iPortal;

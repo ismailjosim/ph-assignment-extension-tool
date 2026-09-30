@@ -1,23 +1,19 @@
 const displayButtons = (items) => {
-  const btnsContainer = document.getElementById("toolsId");
-  btnsContainer.innerHTML = "";
-  div.innerHTML = `
-<div
-    style=" 
-        position: fixed;
-        right: 0.3%; 
-        top:1%;
-        z-index: 99999; 
-        height: 96vh; 
-        border-radius: 10px 10px 10px 10px;
-        display:flex; 
-        justify-content: center;
-        align-items: center;
-    " 
->  
-<div class="d-flex  flex-column flex flex-col p-2 rounded bg-blur  border" id='my-btns' style='display:flex;flex-direction:column'>
-${items + cross}
-</div>
+  let btnsContainer = document.getElementById("toolsId");
+  if (!btnsContainer) {
+    btnsContainer = document.createElement("div");
+    btnsContainer.setAttribute("id", "toolsId");
+    if (document.body) {
+      document.body.insertBefore(btnsContainer, document.body.firstChild);
+    }
+  }
+
+  btnsContainer.innerHTML = `
+<div id="tools-container">  
+  <div id="my-btns">
+    <div class="dock-handle"></div>
+    ${items + cross}
+  </div>
 </div>
 `;
 
@@ -35,9 +31,14 @@ ${items + cross}
     });
   }
 
-  const crossBtn = getElement(true, "cross");
-  crossBtn.addEventListener("click", function () {
-    getElement(true, "toolsId").innerHTML = "";
-    localStorage.setItem("tools", JSON.stringify(false));
-  });
+  const crossBtn = document.getElementById("cross");
+  if (crossBtn) {
+    crossBtn.addEventListener("click", function () {
+      btnsContainer.innerHTML = "";
+      if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.set({ toolsEnabled: false });
+      }
+      localStorage.setItem("tools", JSON.stringify(false));
+    });
+  }
 };

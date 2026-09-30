@@ -1,38 +1,35 @@
 {
-	"name": "Tools",
-	"description": "This extension is made with love and used to help a bit to all of our instructors when they are on the playground - SHAKIL & FARHAN ❤️‍🔥",
-	"version": "1.1.1",
-	"permissions": ["activeTab", "scripting"],
-	"host_permissions": [
-		"*://*.programming-hero.com/*",
-		"*://meet.google.com/*",
-		"*://github.com/*",
-		"*://*.netlify.app/*",
-		"*://*.surge.sh/*"
-	],
-	"action": {
-		"default_icon": "fire-love.png",
-		"default_popup": "index.html"
-	},
-	"content_scripts": [
-		{
-			"matches": [
-				"*://*.programming-hero.com/*",
-				"*://meet.google.com/*",
-				"*://github.com/*",
-				"*://*.netlify.app/*",
-				"*://*.surge.sh/*"
-			],
-			"js": [
-				"app.js",
-				"display.js",
-				"./js/github.js",
-				"./js/buttons.js",
-				"./js/meet.js",
-				"./js/liveSite.js",
-				"./js/instructorPortal.js"
-			]
-		}
-	],
-	"manifest_version": 3
+  "name": "Tools",
+  "description": "This extension is made with love and used to help a bit to all of our instructors when they are on the playground - SHAKIL & FARHAN ❤️‍🔥",
+  "version": "1.1.4",
+  "permissions": ["activeTab", "scripting", "storage"],
+  "host_permissions": [
+    "*://*.programming-hero.com/*",
+    "*://meet.google.com/*",
+    "*://github.com/*"
+  ],
+  "action": {
+    "default_icon": "fire-love.png",
+    "default_popup": "index.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.programming-hero.com/*",
+        "*://meet.google.com/*",
+        "*://github.com/*"
+      ],
+      "css": ["tools.css"],
+      "js": [
+        "./js/buttons.js",
+        "display.js",
+        "./js/github.js",
+        "./js/meet.js",
+        "./js/liveSite.js",
+        "./js/instructorPortal.js",
+        "app.js"
+      ]
+    }
+  ],
+  "manifest_version": 3
 }

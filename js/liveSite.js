@@ -18,3 +18,6 @@ const liveSite = () => {
     }
   });
 };
+
+window.liveSite = liveSite;
+

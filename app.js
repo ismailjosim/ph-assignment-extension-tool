@@ -8,45 +8,125 @@ const getElement = (isId, name) => {
   return element;
 };
 
-const div = document.createElement("div");
-div.setAttribute("id", "toolsId");
+const invokeRoute = (fnName, fallbackRef) => {
+  const fn =
+    typeof fallbackRef === "function"
+      ? fallbackRef
+      : typeof window !== "undefined" && typeof window[fnName] === "function"
+        ? window[fnName]
+        : null;
 
-const route = document.location.href;
+  if (fn) {
+    fn();
+    return true;
+  }
+  return false;
+};
 
 const showRoutes = () => {
-  if (route.includes("github.com/")) {
-    github();
-  } else if (route.includes("meet.google.com/")) {
-    meet();
-  } else if (route.includes("web.programming-hero.com/")) {
-    iPortal();
-  }
-  // else if (
-  //   route.includes(".netlify.app/") ||
-  //   route.includes(".surge.sh/") ||
-  //   route.includes(".web.app/")
-  // ) {
-  //   liveSite();
-  // }
-  else {
-    liveSite();
-  }
-};
+  const currentRoute = window.location.href;
 
-window.onload = () => {
-  document.body.insertBefore(div, document.body.firstChild);
-  const tools = JSON.parse(localStorage.getItem("tools"));
-
-  if (tools === null || tools) {
-    showRoutes();
+  if (currentRoute.includes("github.com")) {
+    if (!invokeRoute("github", typeof github !== "undefined" ? github : null)) {
+      setTimeout(() => invokeRoute("github", window.github), 100);
+    }
+  } else if (currentRoute.includes("meet.google.com")) {
+    if (!invokeRoute("meet", typeof meet !== "undefined" ? meet : null)) {
+      setTimeout(() => invokeRoute("meet", window.meet), 100);
+    }
+  } else if (
+    currentRoute.includes("programming-hero.com") ||
+    currentRoute.includes("index.html") ||
+    !currentRoute.startsWith("http")
+  ) {
+    if (!invokeRoute("iPortal", typeof iPortal !== "undefined" ? iPortal : null)) {
+      setTimeout(() => invokeRoute("iPortal", window.iPortal), 100);
+    }
+  } else {
+    // Never show menu on live site links (vercel, netlify, surge, etc.)
+    return;
   }
 };
 
-// document.onload(() => displayButtons(buttons))
+const toggleTools = () => {
+  const toolsId = document.getElementById("toolsId");
+  const container = document.getElementById("tools-container");
 
-document.addEventListener("keypress", function (e) {
-  if (e.key === "_") {
-    showRoutes();
+  // If toolbar is currently visible, close it
+  if (toolsId && container && toolsId.innerHTML.trim() !== "") {
+    toolsId.innerHTML = "";
+    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ toolsEnabled: false });
+    }
+    localStorage.setItem("tools", JSON.stringify(false));
+  } else {
+    // If closed, open it!
+    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+      chrome.storage.local.set({ toolsEnabled: true });
+    }
     localStorage.setItem("tools", JSON.stringify(true));
+    showRoutes();
   }
-});
+};
+
+// Make available globally for click handlers
+window.toggleTools = toggleTools;
+window.showRoutes = showRoutes;
+
+const initTools = () => {
+  const currentRoute = window.location.href;
+  // If this is a live site (not github, not meet, not programming-hero, not index.html), do nothing
+  if (
+    !currentRoute.includes("github.com") &&
+    !currentRoute.includes("meet.google.com") &&
+    !currentRoute.includes("programming-hero.com") &&
+    !currentRoute.includes("index.html") &&
+    currentRoute.startsWith("http")
+  ) {
+    return;
+  }
+
+  let toolsId = document.getElementById("toolsId");
+  if (!toolsId && document.body) {
+    toolsId = document.createElement("div");
+    toolsId.setAttribute("id", "toolsId");
+    document.body.insertBefore(toolsId, document.body.firstChild);
+  }
+
+  // Check persistent storage: if previously closed, remain closed!
+  if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+    chrome.storage.local.get(["toolsEnabled"], (res) => {
+      // If explicitly disabled (closed), remain closed until user toggles again
+      if (res.toolsEnabled === false) {
+        return;
+      }
+      showRoutes();
+    });
+  } else {
+    const tools = JSON.parse(localStorage.getItem("tools"));
+    if (tools === false) {
+      return;
+    }
+    showRoutes();
+  }
+};
+
+if (document.readyState === "loading") {
+  window.addEventListener("DOMContentLoaded", initTools);
+} else {
+  initTools();
+}
+
+// Handle both keydown and keypress for underscore toggle
+const handleKeyToggle = (e) => {
+  if (
+    e.key === "_" ||
+    (e.code === "Minus" && e.shiftKey) ||
+    (e.key === "-" && e.shiftKey)
+  ) {
+    toggleTools();
+  }
+};
+
+document.addEventListener("keydown", handleKeyToggle);
+document.addEventListener("keypress", handleKeyToggle);
