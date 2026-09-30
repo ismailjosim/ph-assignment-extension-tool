@@ -44,11 +44,15 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 | Shortcut | Page / Context | Action |
 | :--- | :--- | :--- |
 | `_` (or `Shift + -`) | Global | **Toggle Floating Toolbar** (Show / Hide) |
-| `👨‍👩‍👧‍👦` / `👨` (Toggle) | Instructor Portal | Toggle Arrow Keys navigation mode on / off |
+| `👨‍👩‍👧‍👦` / `👨` (Toggle) | Instructor Portal | Toggle Arrow Keys & hotkeys mode on / off |
 | `↑` (ArrowUp) | Instructor Portal | **Open Assignment** & launch GitHub + Live Site links in new tabs |
+| `A` | Modal | **Toggle "Select All"** main rubric requirements |
+| `F` or `←` (ArrowLeft) | Modal | **⚡ Feedbk**: Click "Add to feedback editor", calculate & fill mark, scroll to submit |
+| `1` / `2` / `3` / `4` | Modal | **Quick Score Presets**: `1` = 60, `2` = 58, `3` = 55, `4` = 50 |
+| `Enter` or `→` (ArrowRight) | Modal | **Submit Assignment** (or `Ctrl+Enter` inside feedback editor) |
+| `J` / `PageDown` | Modal | **Scroll Down** directly to Feedback & Submit |
+| `K` / `PageUp` | Modal | **Scroll Up** to top of modal |
 | `↓` (ArrowDown) | Instructor Portal | **Close Modal** |
-| `←` (ArrowLeft) | Instructor Portal | **Focus & Copy Mark** (auto-fills feedback and copies recommended score) |
-| `→` (ArrowRight) | Instructor Portal | **Submit Mark** |
 | `↑` (ArrowUp) | GitHub | **Analyze Commits & Deadlines** |
 | `←` (ArrowLeft) | GitHub | **Close Tab** |
 
@@ -64,9 +68,12 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
    - The student's GitHub repo and Live Site open automatically in new tabs.
 4. Review the live site preview tab (stays clean without any toolbar).
 5. Switch to the GitHub tab to review the commit history and deadline verification card.
-6. Return to the portal tab, press **`Focus`** (or **`←`**) to insert standard feedback and copy the recommended score.
-7. Paste the score, verify criteria, and click **`Submit`** (or press **`→`**).
-8. Click **`Close`** (or press **`↓`**) to dismiss the modal and proceed to the next assignment.
+6. Return to the portal tab:
+   - Press **`A`** (or click **`✓ All`**) to select all main rubric criteria.
+   - Press **`F`** or **`←`** (or click **`⚡ Feedbk`**) to transfer feedback into the editor and auto-fill marks (60 or 50 based on deadline).
+   - Or click **`60`** / **`50`** (or press **`1`** / **`4`**) for instant score presets.
+   - Press **`Enter`** or **`→`** (or click **`Submit`**) to submit the score.
+7. Press **`↓`** (or click **`Close`**) to dismiss the modal and proceed to the next student!
 
 ### 2. GitHub Verification Workflow
 1. When opening a repository, the extension automatically inspects the commit history and cross-checks the deadline.

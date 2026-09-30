@@ -5,8 +5,11 @@ const iPortal = () => {
 
   displayButtons(
     openModal +
-      pressE +
+      selectAllMain +
       focus +
+      quick60 +
+      quick50 +
+      jumpScroll +
       submitMark +
       assimentAdd +
       unassign +
@@ -24,27 +27,209 @@ const iPortal = () => {
   const addAssignment = getElement(true, "addAssignment");
   const unAssign = getElement(true, "unassign");
   const arrowKeyBtn = getElement(true, "arrowKeys");
+  const selectAllBtn = getElement(true, "selectAllRubric");
+  const btn60 = getElement(true, "quick60");
+  const btn50 = getElement(true, "quick50");
+  const jumpBtn = getElement(true, "jumpScroll");
 
-  // add mark function
-  const addMark = () => {
-    const inputMark = getElement(true, "Mark");
-    const insertBtn = getElement(true, "insertBtn");
-    if (insertBtn) insertBtn.click();
-    const suggestions = document.getElementsByClassName(
-      "m-2 w-50 markSuggestions",
-    );
-    if (suggestions && suggestions[0]) {
-      const suggetMark = suggestions[0].innerText.split(" ")[0];
-      navigator.clipboard.writeText(parseInt(suggetMark));
+  // Show a sleek non-intrusive floating toast notification
+  const showToast = (message, icon = "⚡") => {
+    let toast = document.getElementById("tool-toast");
+    if (!toast) {
+      toast = document.createElement("div");
+      toast.id = "tool-toast";
+      toast.className = "tool-toast";
+      document.body.appendChild(toast);
     }
-    if (inputMark) inputMark.focus();
+    toast.innerHTML = `<span>${icon}</span><span>${message}</span>`;
+    toast.style.opacity = "1";
+    toast.style.display = "flex";
+    if (toast._timer) clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => {
+      toast.style.opacity = "0";
+      setTimeout(() => {
+        if (toast && toast.style.opacity === "0") toast.style.display = "none";
+      }, 250);
+    }, 2200);
+  };
+
+  // Find the 'Add to feedback editor' button
+  const findFeedbackBtn = () => {
+    const insertBtn = document.getElementById("insertBtn");
+    if (insertBtn) return insertBtn;
+    const buttons = document.querySelectorAll("button");
+    for (const b of buttons) {
+      if (
+        b.innerText &&
+        b.innerText.toLowerCase().includes("add to feedback editor")
+      ) {
+        return b;
+      }
+    }
+    return null;
+  };
+
+  // Find the 'Give Mark' input box
+  const findMarkInput = () => {
+    let input =
+      document.getElementById("Mark") ||
+      document.querySelector("input[name='mark' i], input[name='Mark']");
+    if (!input) {
+      const allInputs = document.querySelectorAll(
+        "input[type='number'], input[type='text']",
+      );
+      for (const inp of allInputs) {
+        const parent = inp.closest(".form-group, div, section");
+        const parentText = (
+          parent ? parent.innerText : inp.parentElement?.innerText || ""
+        ).toLowerCase();
+        if (parentText.includes("give mark") || parentText.includes("out of")) {
+          return inp;
+        }
+      }
+    }
+    return input;
+  };
+
+  // Find the 'Select all' checkbox in rubric
+  const findRubricSelectAll = () => {
+    const explicit = document.querySelector(
+      "#select-all, .select-all, input[name='selectAll']",
+    );
+    if (explicit) return explicit;
+    const allCheckboxes = document.querySelectorAll(
+      ".assignment-evaluation-form input[type='checkbox'], .modal input[type='checkbox']",
+    );
+    for (const cb of allCheckboxes) {
+      const parent = cb.closest("label, div, li, span");
+      if (parent && parent.innerText.toLowerCase().includes("select all")) {
+        return cb;
+      }
+    }
+    return allCheckboxes[0] || null;
+  };
+
+  // Find the modal primary Submit button (ignoring toolbar submit)
+  const findSubmitBtn = () => {
+    const allButtons = document.querySelectorAll("button");
+    for (const b of allButtons) {
+      if (b.id === "submitMark" || b.closest("#toolsId")) continue;
+      const txt = (b.innerText || "").trim().toLowerCase();
+      if (txt === "submit") {
+        return b;
+      }
+    }
+    return (
+      getElement(false, "btn px-4 btn-primary")[0] ||
+      document.querySelector(
+        ".assignment-evaluation-form button[type='submit'], .modal button.btn-primary",
+      )
+    );
+  };
+
+  // Fill mark input with simulated user events so framework state updates
+  const fillMark = (score) => {
+    const inputMark = findMarkInput();
+    if (inputMark) {
+      inputMark.value = score;
+      inputMark.dispatchEvent(new Event("input", { bubbles: true }));
+      inputMark.dispatchEvent(new Event("change", { bubbles: true }));
+      inputMark.focus();
+      showToast(`Mark filled: ${score}`, "🎯");
+      return true;
+    }
+    return false;
+  };
+
+  // Toggle 'Select all' main requirements in rubric
+  const toggleSelectAll = () => {
+    const cb = findRubricSelectAll();
+    if (cb) {
+      cb.click();
+      const status = cb.checked ? "checked" : "unchecked";
+      showToast(`Select All ${status}`, "✓");
+    } else {
+      showToast("Rubric 'Select All' not found", "⚠️");
+    }
+  };
+
+  // Smooth scroll within modal
+  const scrollToSection = (target) => {
+    const modalScrollArea =
+      document.querySelector(".modal-body, .modal-content, .assignment-evaluation-form") ||
+      document.documentElement;
+
+    if (target === "top") {
+      if (modalScrollArea.scrollTo) {
+        modalScrollArea.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      showToast("Scrolled to Top", "⬆️");
+    } else {
+      const targetEl = findSubmitBtn() || findFeedbackBtn() || findMarkInput();
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else if (modalScrollArea.scrollTo) {
+        modalScrollArea.scrollTo({ top: modalScrollArea.scrollHeight, behavior: "smooth" });
+      } else {
+        window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+      }
+      showToast("Scrolled to Feedback / Submit", "⬇️");
+    }
+  };
+
+  // Smart Feedback transfer + Score Auto-Calculation
+  const smartFeedbackAndScore = (forcedScore) => {
+    // 1. Click "Add to feedback editor"
+    const fbBtn = findFeedbackBtn();
+    if (fbBtn) {
+      fbBtn.click();
+    }
+
+    // 2. Determine target score
+    let targetScore = forcedScore !== undefined ? forcedScore : 60;
+
+    if (forcedScore === undefined) {
+      // Check stored submission metadata for deadline deductions
+      if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+        chrome.storage.local.get("latestSubmission", (data) => {
+          if (data && data.latestSubmission) {
+            const sub = data.latestSubmission;
+            if (sub.submittedAt && sub.firstDeadline) {
+              const subDate = new Date(sub.submittedAt);
+              const firstDate = new Date(sub.firstDeadline);
+              if (!isNaN(subDate) && !isNaN(firstDate) && subDate > firstDate) {
+                targetScore = sub.secondMarks || 50;
+              }
+            }
+          }
+          fillMark(targetScore);
+          scrollToSection("down");
+          showToast(`Feedback added & ${targetScore} marks set!`, "⚡");
+        });
+        return;
+      }
+    }
+
+    fillMark(targetScore);
+    scrollToSection("down");
+    showToast(`Feedback added & ${targetScore} marks set!`, "⚡");
+  };
+
+  // Legacy addMark function for backward compatibility
+  const addMark = () => {
+    smartFeedbackAndScore();
   };
 
   // ass submit function
   const submitAss = () => {
-    const submitButtonPrimary = getElement(false, "btn px-4 btn-primary")[0];
-    if (submitButtonPrimary) {
-      submitButtonPrimary.click();
+    const submitBtn = findSubmitBtn();
+    if (submitBtn) {
+      submitBtn.click();
+      showToast("Submitting assignment...", "🚀");
+    } else {
+      showToast("Submit button not found", "⚠️");
     }
   };
 
@@ -352,23 +537,121 @@ const iPortal = () => {
     });
   }
 
-  // press focus and submit button  (< | >)
+  // press select all rubric requirements
+  if (selectAllBtn) {
+    selectAllBtn.addEventListener("click", () => {
+      toggleSelectAll();
+    });
+  }
+
+  // quick score 60
+  if (btn60) {
+    btn60.addEventListener("click", () => {
+      fillMark(60);
+    });
+  }
+
+  // quick score 50 (late submission)
+  if (btn50) {
+    btn50.addEventListener("click", () => {
+      fillMark(50);
+    });
+  }
+
+  // jump scroll down
+  if (jumpBtn) {
+    jumpBtn.addEventListener("click", () => {
+      scrollToSection("down");
+    });
+  }
+
+  // Enhanced keyboard shortcuts for complete hands-free evaluation flow
   document.addEventListener("keydown", function (e) {
     if (!isActiveArrowKeys) return;
 
+    // Check if the user is actively typing in a text field
+    const activeEl = document.activeElement;
+    const activeTag = activeEl ? activeEl.tagName : "";
+    const isTyping =
+      activeTag === "TEXTAREA" ||
+      (activeTag === "INPUT" &&
+        activeEl.type !== "checkbox" &&
+        activeEl.type !== "radio" &&
+        activeEl.type !== "button" &&
+        activeEl.type !== "submit");
+
+    // Allow Ctrl+Enter to submit from within the feedback editor
+    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      submitAss();
+      return;
+    }
+
+    // Do not interfere with regular typing inside text boxes
+    if (isTyping) return;
+
     switch (e.key) {
       case "ArrowLeft":
-        addMark();
+      case "f":
+      case "F":
+        e.preventDefault();
+        smartFeedbackAndScore();
         break;
+
       case "ArrowRight":
+      case "Enter":
+        e.preventDefault();
         submitAss();
         break;
 
       case "ArrowUp":
+        e.preventDefault();
         openAss();
         break;
+
       case "ArrowDown":
+        e.preventDefault();
         closeAss();
+        break;
+
+      case "a":
+      case "A":
+        e.preventDefault();
+        toggleSelectAll();
+        break;
+
+      case "1":
+        e.preventDefault();
+        fillMark(60);
+        break;
+
+      case "2":
+        e.preventDefault();
+        fillMark(58);
+        break;
+
+      case "3":
+        e.preventDefault();
+        fillMark(55);
+        break;
+
+      case "4":
+        e.preventDefault();
+        fillMark(50);
+        break;
+
+      case "j":
+      case "J":
+      case "PageDown":
+        e.preventDefault();
+        scrollToSection("down");
+        break;
+
+      case "k":
+      case "K":
+      case "PageUp":
+        e.preventDefault();
+        scrollToSection("top");
         break;
 
       default:
