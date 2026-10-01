@@ -1,7 +1,16 @@
+// Clean up any legacy inspector drawers or cards if left in the DOM
+const cleanupLegacyInspector = () => {
+  const oldDrawer = document.getElementById("tool-inspector-drawer");
+  if (oldDrawer) oldDrawer.remove();
+  const oldCard = document.getElementById("tool-devtools-card");
+  if (oldCard) oldCard.remove();
+};
+cleanupLegacyInspector();
+
 const buildLiveSiteDockHtml = () => `
 <div class="tool-dock-header">
   <div class="tool-dock-title">
-    <img src="${typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL('logo.png') : 'logo.png'}" class="tool-dock-logo" alt="ACHT" />
+    <img src="${typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL('assets/logo.png') : 'assets/logo.png'}" class="tool-dock-logo" alt="ACHT" />
     <span>LIVE SITE</span>
   </div>
   ${cross}
@@ -29,6 +38,7 @@ const buildLiveSiteDockHtml = () => `
 `;
 
 const liveSite = () => {
+  cleanupLegacyInspector();
   displayButtons(buildLiveSiteDockHtml());
 
   const top = document.getElementById("scrollTop");
@@ -56,7 +66,7 @@ const liveSite = () => {
     });
   }
 
-  // Keyboard navigation for live site: B or Alt+Left to go back, ArrowLeft to close tab
+  // Keyboard navigation for live site
   if (!window._liveSiteKeysBound) {
     window._liveSiteKeysBound = true;
     document.addEventListener("keydown", function (e) {

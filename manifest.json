@@ -6,12 +6,12 @@
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],
   "icons": {
-    "16": "logo.png",
-    "48": "logo.png",
-    "128": "logo.png"
+    "16": "assets/logo.png",
+    "48": "assets/logo.png",
+    "128": "assets/logo.png"
   },
   "action": {
-    "default_icon": "logo.png",
+    "default_icon": "assets/logo.png",
     "default_popup": "index.html"
   },
   "content_scripts": [
@@ -19,19 +19,19 @@
       "matches": ["<all_urls>"],
       "css": ["tools.css"],
       "js": [
-        "./js/buttons.js",
-        "display.js",
-        "./js/github.js",
-        "./js/meet.js",
-        "./js/liveSite.js",
-        "./js/instructorPortal.js",
-        "app.js"
+        "js/buttons.js",
+        "js/display.js",
+        "js/github.js",
+        "js/meet.js",
+        "js/liveSite.js",
+        "js/instructorPortal.js",
+        "js/app.js"
       ]
     }
   ],
   "web_accessible_resources": [
     {
-      "resources": ["logo.png"],
+      "resources": ["assets/*"],
       "matches": ["<all_urls>"]
     }
   ],

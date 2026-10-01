@@ -137,7 +137,8 @@ const handleKeyToggle = (e) => {
     (target.tagName === "INPUT" ||
       target.tagName === "TEXTAREA" ||
       target.isContentEditable ||
-      target.closest(".ck-editor, .monaco-editor, [contenteditable='true']"));
+      (typeof target.closest === "function" &&
+        target.closest(".ck-editor, .monaco-editor, [contenteditable='true']")));
   if (isInput) return;
 
   if (

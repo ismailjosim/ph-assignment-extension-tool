@@ -1,4 +1,4 @@
-const displayButtons = (items) => {
+const displayButtons = (items, layoutMode) => {
   let btnsContainer = document.getElementById("toolsId");
   if (!btnsContainer) {
     btnsContainer = document.createElement("div");
@@ -8,15 +8,25 @@ const displayButtons = (items) => {
     }
   }
 
+  const isCompact =
+    layoutMode === "compact" ||
+    items.includes("layout-compact") ||
+    items.includes("compact-handle");
+
   const hasCustomLayout =
-    items.includes("tool-dock-section") || items.includes("tool-dock-header");
+    items.includes("tool-dock-section") ||
+    items.includes("tool-dock-header") ||
+    isCompact;
+
   const content = hasCustomLayout
     ? items
     : `<div class="dock-handle"></div>${items + cross}`;
 
+  const modeClass = isCompact ? "layout-compact" : "layout-pro";
+
   btnsContainer.innerHTML = `
 <div id="tools-container">  
-  <div id="my-btns">
+  <div id="my-btns" class="${modeClass}">
     ${content}
   </div>
 </div>
@@ -50,4 +60,31 @@ const displayButtons = (items) => {
       localStorage.setItem("tools", JSON.stringify(false));
     });
   }
+
+  const handleToggle = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    if (typeof window.toggleDockLayout === "function") {
+      window.toggleDockLayout();
+    }
+  };
+
+  const layoutToggleBtn = document.getElementById("toggle-dock-layout");
+  if (layoutToggleBtn) {
+    layoutToggleBtn.onclick = handleToggle;
+  }
+
+  const drawerTabBtn = document.getElementById("dock-drawer-tab");
+  if (drawerTabBtn) {
+    drawerTabBtn.onclick = handleToggle;
+  }
+
+  const compactHandle = document.getElementById("compact-handle");
+  if (compactHandle) {
+    compactHandle.onclick = handleToggle;
+  }
 };
+
+

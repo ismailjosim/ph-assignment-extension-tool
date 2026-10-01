@@ -1,20 +1,79 @@
 const iPortal = () => {
   let isActiveArrowKeys = JSON.parse(
-    localStorage.getItem("tools-activeArrowKeys"),
+    localStorage.getItem("tools-activeArrowKeys") ?? "true",
   );
+
+  // Resolve layout: user selection in localStorage, or auto-detect for laptops/smaller displays
+  const getStoredLayout = () => {
+    const saved = localStorage.getItem("tools-layout");
+    if (saved === "compact" || saved === "pro") return saved;
+    if (
+      typeof window !== "undefined" &&
+      (window.innerWidth <= 1366 || window.innerHeight <= 720)
+    ) {
+      return "compact";
+    }
+    return "pro";
+  };
+
+  const currentLayout = getStoredLayout();
+
+  // Function to switch between Pro Dashboard and Compact Pill layouts
+  let _toggleLock = false;
+  const toggleDockLayout = () => {
+    if (_toggleLock) return;
+    _toggleLock = true;
+    setTimeout(() => {
+      _toggleLock = false;
+    }, 400);
+
+    const myBtns = document.getElementById("my-btns");
+    const isCurrentlyCompact =
+      myBtns?.classList.contains("layout-compact") ||
+      localStorage.getItem("tools-layout") === "compact";
+
+    const next = isCurrentlyCompact ? "pro" : "compact";
+    localStorage.setItem("tools-layout", next);
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.storage &&
+      chrome.storage.local
+    ) {
+      chrome.storage.local.set({ toolsLayout: next });
+    }
+    showToast(
+      next === "compact"
+        ? "Switched to Compact Pill"
+        : "Switched to Pro Dashboard",
+      "📐",
+    );
+    iPortal();
+  };
+  window.toggleDockLayout = toggleDockLayout;
+
+  const logoUrl =
+    typeof chrome !== "undefined" && chrome.runtime?.getURL
+      ? chrome.runtime.getURL("assets/logo.png")
+      : "assets/logo.png";
 
   const proDockHtml = `
 <div class="tool-dock-header">
   <div class="tool-dock-title">
-    <img src="${typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL('logo.png') : 'logo.png'}" class="tool-dock-logo" alt="ACHT" />
+    <img src="${logoUrl}" class="tool-dock-logo" alt="ACHT" />
     <span>EVALUATOR</span>
   </div>
-  ${cross}
+  <div class="tool-dock-controls">
+    <button id="toggle-dock-layout" type="button" class="tool-btn-icon-subtle" title="Switch to Compact Pill Layout (Shift+M)">🗗</button>
+    ${cross}
+  </div>
 </div>
 
 <div class="tool-dock-section">
   <div class="tool-dock-label">Workflow</div>
-  ${openModal}
+  <div style="display: grid; grid-template-columns: 1fr 34px; gap: 5px;">
+    ${openModal}
+    ${pressE}
+  </div>
 </div>
 
 <div class="tool-dock-divider"></div>
@@ -48,9 +107,34 @@ const iPortal = () => {
   ${arrowKey}
   ${reload}
 </div>
+<button id="dock-drawer-tab" class="tool-dock-drawer-tab" title="Switch to Compact Pill (Shift+M)">▶</button>
 `;
 
-  displayButtons(proDockHtml);
+  const compactDockHtml = `
+<div class="compact-handle" id="compact-handle" title="Click to expand to Pro Dashboard"></div>
+<button id="toggle-dock-layout" type="button" class="tool-compact-toggle" title="Switch to Pro Dashboard (Shift+M)">◧</button>
+${compactOpen}
+${compactBracket}
+${compactSelectAll}
+${compactJump}
+${compactFocus}
+${compact60}
+${compact50}
+${compactSubmit}
+${compactAdd}
+${compactUnassign}
+${compactClose}
+${compactArrowKey}
+${compactReload}
+${compactCross}
+<button id="dock-drawer-tab" class="tool-dock-drawer-tab" title="Toggle Layout (Shift+M)">◀</button>
+`;
+
+  displayButtons(
+    currentLayout === "compact" ? compactDockHtml : proDockHtml,
+    currentLayout,
+  );
+
 
   // instructor dashboard buttons
   const focusButton = getElement(true, "focus");
@@ -340,6 +424,155 @@ const iPortal = () => {
     }
   };
 
+  // Extract submission data, deadlines, and repository associations
+  const scrapeAndStoreSubmissionData = () => {
+    // 1. Search full page text to ensure we never miss deadline info regardless of modal container structure
+    const bodyText = (document.body ? (document.body.innerText || document.body.textContent || "") : "");
+    const modalEl = document.querySelector(
+      ".assignment-evaluation-form__submission-data, .assignment-evaluation-form, .modal-content, .modal-body, [class*='submission-details']"
+    );
+    const modalText = (modalEl ? (modalEl.innerText || modalEl.textContent || "") : "");
+    const fullText = `${modalText}\n${bodyText}`;
+
+    if (
+      !fullText.includes("First deadline") &&
+      !fullText.includes("Submitted at") &&
+      !fullText.includes("Deadlines")
+    ) {
+      return null;
+    }
+
+    let firstDeadline = null;
+    let firstMarks = 60;
+    let secondDeadline = null;
+    let secondMarks = 60;
+    let lateDeadline = null;
+    let lateMarks = 30;
+    let submittedAt = null;
+    let resubmittedAt = null;
+
+    // Date regex matching: "14 Sep, 2026 06:00 PM", "Sep 14, 2026, 6:00 PM", "14 September, 2026 6:00 PM", etc.
+    const dateRegexPart =
+      "(?:\\d{1,2}\\s+[A-Za-z]+,?\\s+\\d{4}|[A-Za-z]+\\s+\\d{1,2},?\\s+\\d{4})[\\s,]+[0-9:]+\\s*[APMapm]{2}";
+
+    // First deadline
+    const firstMatch =
+      fullText.match(new RegExp(`First deadline[^\\d]*(\\d+)\\s*marks[\\s\\S]*?(${dateRegexPart})`, "i")) ||
+      fullText.match(new RegExp(`First deadline[\\s\\S]*?(${dateRegexPart})`, "i")) ||
+      fullText.match(new RegExp(`Deadline[\\s\\S]*?(${dateRegexPart})`, "i"));
+
+    if (firstMatch) {
+      if (firstMatch[2]) {
+        firstMarks = parseInt(firstMatch[1], 10) || 60;
+        firstDeadline = firstMatch[2].trim();
+      } else {
+        firstDeadline = firstMatch[1].trim();
+      }
+    }
+
+    // Second deadline
+    const secondMatch =
+      fullText.match(new RegExp(`Second deadline[^\\d]*(\\d+)\\s*marks[\\s\\S]*?(${dateRegexPart})`, "i")) ||
+      fullText.match(new RegExp(`Second deadline[\\s\\S]*?(${dateRegexPart})`, "i"));
+
+    if (secondMatch) {
+      if (secondMatch[2]) {
+        secondMarks = parseInt(secondMatch[1], 10) || 50;
+        secondDeadline = secondMatch[2].trim();
+      } else {
+        secondDeadline = secondMatch[1].trim();
+      }
+    }
+
+    // Late deadline
+    const lateMatch =
+      fullText.match(new RegExp(`Late deadline[^\\d]*(\\d+)\\s*marks[\\s\\S]*?(${dateRegexPart})`, "i")) ||
+      fullText.match(new RegExp(`Late deadline[\\s\\S]*?(${dateRegexPart})`, "i"));
+
+    if (lateMatch) {
+      if (lateMatch[2]) {
+        lateMarks = parseInt(lateMatch[1], 10) || 30;
+        lateDeadline = lateMatch[2].trim();
+      } else {
+        lateDeadline = lateMatch[1].trim();
+      }
+    }
+
+    // Submitted at
+    const subMatch = fullText.match(
+      new RegExp(`Submitted at[\\s\\S]*?(${dateRegexPart})`, "i")
+    );
+    if (subMatch) {
+      submittedAt = subMatch[1].trim();
+    }
+
+    // Resubmitted at
+    const resubMatch = fullText.match(
+      new RegExp(`Resubmitted at[\\s\\S]*?(${dateRegexPart})`, "i")
+    );
+    if (
+      resubMatch &&
+      !resubMatch[0].toLowerCase().includes("not resubmitted")
+    ) {
+      resubmittedAt = resubMatch[1].trim();
+    }
+
+    const hasUndefinedMarks =
+      fullText.includes("undefined marks") ||
+      fullText.includes("NaN marks") ||
+      isNaN(firstMarks);
+
+    if (!firstDeadline && !submittedAt) return null;
+
+    // Find all GitHub repositories mentioned anywhere in the modal or page
+    const fullHtml =
+      (document.body ? document.body.innerHTML : "") + " " + fullText;
+    const githubUrls =
+      fullHtml.match(/github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)/gi) || [];
+
+    // Compare meaningful hash to completely prevent duplicate storage writes and infinite loops
+    const payloadHash = `${firstDeadline}|${firstMarks}|${secondDeadline}|${secondMarks}|${submittedAt}|${hasUndefinedMarks}|${githubUrls.sort().join(",")}`;
+    if (window._lastStoredSubmissionHash === payloadHash) {
+      return null;
+    }
+    window._lastStoredSubmissionHash = payloadHash;
+
+    const submissionPayload = {
+      firstDeadline,
+      firstMarks: isNaN(firstMarks) ? null : firstMarks,
+      secondDeadline,
+      secondMarks: isNaN(secondMarks) ? null : secondMarks,
+      lateDeadline,
+      lateMarks,
+      submittedAt,
+      resubmittedAt,
+      hasUndefinedMarks,
+      timestamp: Date.now(),
+    };
+
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.storage &&
+      chrome.storage.local
+    ) {
+      const toStore = { latestSubmission: submissionPayload };
+      githubUrls.forEach((raw) => {
+        const m = raw.match(/github\.com\/([^\/\s"'<>]+)\/([^\/\s"'<>]+)/i);
+        if (m) {
+          const owner = m[1].toLowerCase().trim();
+          const repoSlug = m[2].toLowerCase().replace(/\.git$/i, "").replace(/\/+$/, "").trim();
+          toStore[`repo_${owner}/${repoSlug}`] = submissionPayload;
+          toStore[`repo_${repoSlug}`] = submissionPayload;
+        }
+      });
+      chrome.storage.local.set(toStore, () => {
+        console.log("[ACHT Portal] Stored submission data update:", toStore);
+      });
+    }
+
+    return submissionPayload;
+  };
+
   // open ass function
   const openAss = () => {
     const open =
@@ -495,61 +728,15 @@ const iPortal = () => {
       if (uniqueUrls.length > 0) {
         opened = true;
 
-        // Extract submission details & deadlines from the open modal
-        const modal =
-          submissionData.closest(".modal-content, .modal-body, form, .card") ||
-          document.querySelector(".modal-content, .modal-body") ||
-          document.body;
-        const modalText = modal ? modal.innerText || modal.textContent || "" : "";
+        // Scrape and save submission payload to storage
+        const submissionPayload = scrapeAndStoreSubmissionData();
 
-        let firstDeadline = null;
-        let firstMarks = 60;
-        let secondDeadline = null;
-        let secondMarks = 60;
-        let submittedAt = null;
-        let resubmittedAt = null;
-
-        const firstMatch = modalText.match(
-          /First deadline[^\d]*(\d+)\s*marks[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
-        );
-        if (firstMatch) {
-          firstMarks = parseInt(firstMatch[1], 10);
-          firstDeadline = firstMatch[2].trim();
-        }
-
-        const secondMatch = modalText.match(
-          /Second deadline[^\d]*(\d+)\s*marks[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
-        );
-        if (secondMatch) {
-          secondMarks = parseInt(secondMatch[1], 10);
-          secondDeadline = secondMatch[2].trim();
-        }
-
-        const subMatch = modalText.match(
-          /Submitted at[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
-        );
-        if (subMatch) {
-          submittedAt = subMatch[1].trim();
-        }
-
-        const resubMatch = modalText.match(
-          /Resubmitted at[\s\S]*?(\d{1,2}\s+[A-Za-z]+,?\s+\d{4}[\s,]+[0-9:]+\s*[APMapm]{2})/i
-        );
-        if (resubMatch && !resubMatch[0].toLowerCase().includes("not resubmitted")) {
-          resubmittedAt = resubMatch[1].trim();
-        }
-
-        const submissionPayload = {
-          firstDeadline,
-          firstMarks,
-          secondDeadline,
-          secondMarks,
-          submittedAt,
-          resubmittedAt,
-          timestamp: Date.now()
-        };
-
-        if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+        if (
+          submissionPayload &&
+          typeof chrome !== "undefined" &&
+          chrome.storage &&
+          chrome.storage.local
+        ) {
           const toStore = { latestSubmission: submissionPayload };
           uniqueUrls.forEach((u) => {
             const repoMatch = u.match(/github\.com\/([^\/]+\/[^\/\.]+)/i);
@@ -596,14 +783,27 @@ const iPortal = () => {
   // change arrowKey btn status function
   const changeArrowKey = () => {
     if (!arrowKeyBtn) return;
-    if (isActiveArrowKeys) {
-      arrowKeyBtn.className = "tool-btn-util tool-btn-arrow-active";
-      arrowKeyBtn.innerText = "⚡";
-      arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
+    const isCompact = currentLayout === "compact";
+    if (isCompact) {
+      if (isActiveArrowKeys) {
+        arrowKeyBtn.className = "tool-btn tool-btn-arrow-active";
+        arrowKeyBtn.innerText = "⚡";
+        arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
+      } else {
+        arrowKeyBtn.className = "tool-btn tool-btn-arrow-inactive";
+        arrowKeyBtn.innerText = "💤";
+        arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
+      }
     } else {
-      arrowKeyBtn.className = "tool-btn-util";
-      arrowKeyBtn.innerText = "💤";
-      arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
+      if (isActiveArrowKeys) {
+        arrowKeyBtn.className = "tool-btn-util tool-btn-arrow-active";
+        arrowKeyBtn.innerText = "⚡";
+        arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
+      } else {
+        arrowKeyBtn.className = "tool-btn-util";
+        arrowKeyBtn.innerText = "💤";
+        arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
+      }
     }
   };
   changeArrowKey();
@@ -773,6 +973,7 @@ const iPortal = () => {
     });
   }
 
+
   // Enhanced keyboard shortcuts for complete hands-free evaluation flow (guard against duplicates)
   if (!window._iPortalKeysBound) {
     window._iPortalKeysBound = true;
@@ -811,6 +1012,16 @@ const iPortal = () => {
       if (isTyping) return;
 
       switch (e.key) {
+        case "m":
+        case "M":
+          if (e.shiftKey || e.altKey) {
+            e.preventDefault();
+            if (typeof window.toggleDockLayout === "function") {
+              window.toggleDockLayout();
+            }
+          }
+          break;
+
         case "ArrowLeft":
         case "f":
         case "F":
@@ -879,6 +1090,21 @@ const iPortal = () => {
       }
     });
   }
+
+  // Auto-scrape submission details whenever modal opens or changes
+  scrapeAndStoreSubmissionData();
+  if (!window._portalObserverAttached) {
+    window._portalObserverAttached = true;
+    const observer = new MutationObserver(() => {
+      scrapeAndStoreSubmissionData();
+    });
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+    setInterval(scrapeAndStoreSubmissionData, 2000);
+  }
 };
 
 window.iPortal = iPortal;
+
+

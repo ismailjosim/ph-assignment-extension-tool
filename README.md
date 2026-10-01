@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="logo.png" alt="ACHT Logo" width="108" height="108" style="border-radius: 22px;" />
+  <img src="assets/logo.png" alt="ACHT Logo" width="108" height="108" style="border-radius: 22px;" />
   <h1 align="center">Assignment Checking Helper Tool (ACHT) ❤️‍🔥</h1>
 </p>
 

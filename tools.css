@@ -22,10 +22,19 @@
 }
 
 #my-btns {
+  position: relative !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
   box-sizing: border-box !important;
+  user-select: none !important;
+  animation: toolDockSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), padding 0.2s ease, border-radius 0.2s ease !important;
+}
+
+/* Pro / Full Card Layout (Image 1) */
+#my-btns.layout-pro,
+#my-btns:not(.layout-compact) {
   width: 178px !important;
   padding: 10px !important;
   border-radius: 14px !important;
@@ -37,7 +46,48 @@
     0 24px 50px -12px rgba(0, 0, 0, 0.8),
     0 0 0 1px rgba(255, 255, 255, 0.04),
     inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
-  animation: toolDockSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+/* Compact / Slim Vertical Pill Layout (All buttons supported cleanly) */
+#my-btns.layout-compact {
+  width: 60px !important;
+  min-width: 60px !important;
+  max-width: 60px !important;
+  padding: 6px 5px !important;
+  gap: 4px !important;
+  border-radius: 20px !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(24px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow:
+    0 20px 45px -10px rgba(0, 0, 0, 0.75),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  max-height: 96vh !important;
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+}
+
+#my-btns.layout-compact::-webkit-scrollbar {
+  display: none !important;
+}
+
+#my-btns.layout-compact .tool-btn {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: 27px !important;
+  padding: 0 2px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2px !important;
+  justify-content: center !important;
+  text-align: center !important;
+  border-radius: 8px !important;
+}
+
+#my-btns.layout-compact .tool-kbd {
+  display: none !important;
 }
 
 @keyframes toolDockSlideIn {
@@ -57,7 +107,82 @@
   margin: 0 auto 6px auto !important;
   background: rgba(255, 255, 255, 0.18) !important;
   border-radius: 9999px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
 }
+
+.dock-handle:hover {
+  background: rgba(255, 255, 255, 0.45) !important;
+}
+
+.compact-handle {
+  width: 20px !important;
+  height: 3.5px !important;
+  margin: 0 auto 2px auto !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-radius: 9999px !important;
+  cursor: pointer !important;
+  transition: all 0.15s ease !important;
+}
+
+.compact-handle:hover {
+  background: rgba(255, 255, 255, 0.6) !important;
+}
+
+/* Side drawer tab (like Image 2) for quick 1-click toggle */
+.tool-dock-drawer-tab {
+  all: unset !important;
+  box-sizing: border-box !important;
+  position: absolute !important;
+  left: -16px !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 16px !important;
+  height: 40px !important;
+  background: rgba(15, 23, 42, 0.94) !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  border-right: none !important;
+  border-radius: 7px 0 0 7px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  color: #94a3b8 !important;
+  font-size: 8.5px !important;
+  transition: all 0.15s ease !important;
+  box-shadow: -4px 0 10px rgba(0, 0, 0, 0.45) !important;
+  z-index: 10 !important;
+}
+
+.tool-dock-drawer-tab:hover {
+  background: rgba(30, 41, 59, 0.98) !important;
+  color: #38bdf8 !important;
+  width: 18px !important;
+  left: -18px !important;
+}
+
+.tool-compact-toggle {
+  all: unset !important;
+  box-sizing: border-box !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  height: 18px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+  border-radius: 5px !important;
+  margin-bottom: 2px !important;
+  transition: all 0.15s ease !important;
+}
+
+.tool-compact-toggle:hover {
+  color: #38bdf8 !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
 
 /* --------------------------------------------------------------------------
    Dock Header & Activity Status
@@ -79,6 +204,13 @@
   color: #94a3b8 !important;
   text-transform: uppercase !important;
 }
+
+.tool-dock-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
 
 .tool-dock-logo {
   width: 14px !important;
@@ -289,6 +421,70 @@
   border: 1px solid rgba(16, 185, 129, 0.35) !important;
 }
 
+/* Bracket Key ] */
+.tool-btn-bracket {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  color: #cbd5e1 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+/* Add Button (+10) */
+.tool-btn-add {
+  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(34, 211, 238, 0.45) !important;
+  box-shadow: 0 3px 10px rgba(6, 182, 212, 0.35) !important;
+}
+
+/* UnAs Button */
+.tool-btn-unas {
+  background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(244, 114, 182, 0.45) !important;
+  box-shadow: 0 3px 10px rgba(236, 72, 153, 0.35) !important;
+}
+
+/* Close Modal Button */
+.tool-btn-close {
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Reload Button */
+.tool-btn-reload {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(96, 165, 250, 0.45) !important;
+  box-shadow: 0 3px 10px rgba(59, 130, 246, 0.35) !important;
+}
+
+/* Close Stack (X) */
+.tool-btn-cross {
+  background: rgba(244, 63, 94, 0.16) !important;
+  color: #fb7185 !important;
+  border: 1px solid rgba(244, 63, 94, 0.35) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+}
+
+.tool-btn-cross:hover {
+  background: #f43f5e !important;
+  color: #ffffff !important;
+  border-color: #f43f5e !important;
+  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.45) !important;
+}
+
+/* Arrow Keys Inactive */
+.tool-btn-arrow-inactive {
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
+  color: #94a3b8 !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
 /* --------------------------------------------------------------------------
    Utility Micro Toolbar & Footer
    -------------------------------------------------------------------------- */
@@ -395,3 +591,34 @@
 .tool-info-card:active {
   transform: scale(0.98) !important;
 }
+
+/* Card Status Highlights for Deadlines */
+.tool-info-card-late {
+  background: linear-gradient(135deg, #dc2626 0%, #7f1d1d 100%) !important;
+  border: 1.5px solid rgba(248, 113, 113, 0.8) !important;
+  box-shadow: 0 6px 24px rgba(220, 38, 38, 0.5) !important;
+  animation: toolPulseRed 2.8s infinite !important;
+}
+
+@keyframes toolPulseRed {
+  0%, 100% {
+    box-shadow: 0 6px 24px rgba(220, 38, 38, 0.5);
+  }
+  50% {
+    box-shadow: 0 6px 30px rgba(239, 68, 68, 0.75);
+  }
+}
+
+.tool-info-card-warn {
+  background: linear-gradient(135deg, #d97706 0%, #78350f 100%) !important;
+  border: 1.5px solid rgba(251, 191, 36, 0.75) !important;
+  box-shadow: 0 6px 20px rgba(217, 119, 6, 0.45) !important;
+}
+
+.tool-info-card-ontime {
+  background: linear-gradient(135deg, #059669 0%, #064e3b 100%) !important;
+  border: 1.5px solid rgba(52, 211, 153, 0.65) !important;
+  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.4) !important;
+}
+
+
