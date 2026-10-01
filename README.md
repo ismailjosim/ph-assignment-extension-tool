@@ -1,4 +1,7 @@
-# Tools ❤️‍🔥 — Assignment Checking Assistant
+<p align="center">
+  <img src="logo.png" alt="ACHT Logo" width="108" height="108" style="border-radius: 22px;" />
+  <h1 align="center">Assignment Checking Helper Tool (ACHT) ❤️‍🔥</h1>
+</p>
 
 A lightweight, powerful Chrome Extension engineered to streamline and accelerate the workflow of Programming Hero instructors during assignment evaluation, code verification, and live support.
 
@@ -15,8 +18,9 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - Automatically selects 10 pending assignments from the instructor table.
 - Targets the updated portal button (`.assignment-list-table__toolbar-button`) and confirms the SweetAlert dialog in a single click.
 
-### 🔗 Automated Multi-Tab Link Opening
+### 🔗 Automated Multi-Tab Link Opening & URL Auto-Repair
 - Clicking **Open** or pressing **`↑` (ArrowUp)** opens the assignment modal **and** automatically extracts both the student's GitHub Repository and Live Site links from `.assignment-evaluation-form__submission-data`, launching each into separate new tabs.
+- **Smart Protocol Auto-Repair**: If a student submits a naked domain without `https://` (e.g. `assignment-6-six-gamma.vercel.app` or `github.com/user/repo`), the extension automatically repairs and prepends `https://`, strips accidental portal relative paths (`web.programming-hero.com/...`), and opens the destination correctly!
 
 ### 🕒 GitHub Commit Analyzer & Smart Deadline Comparator
 - **Real-Time Commit Extraction**: Accurately extracts the commit count from GitHub's modern React DOM.
@@ -31,8 +35,9 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - Closing the toolbar with **`✕`** sets a global state (`toolsEnabled: false`) via `chrome.storage.local`.
 - When navigating across tabs or opening new repositories on GitHub, the toolbar **remains closed** until explicitly toggled on with **`_`**.
 
-### 🌐 Unobstructed Live Project Previews
-- The toolbar is automatically suppressed on student live project links (e.g., Vercel, Netlify, Surge), keeping the student's website interface clean and distraction-free.
+### 🌐 Live Project Navigation HUD
+- Dedicated **LIVE SITE** floating HUD toolbar for all student live project links (e.g., Vercel, Netlify, Surge, GitHub Pages).
+- Instant **Scroll Top** (`↑`), **Scroll Bottom** (`↓`), and **Close Tab** (`←`) controls for swift preview and review.
 
 ### 📹 Google Meet Auto-Admit
 - Includes a dedicated auto-admit feature to automatically admit waiting students into Google Meet support sessions every 3 seconds.
@@ -44,17 +49,18 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 | Shortcut | Page / Context | Action |
 | :--- | :--- | :--- |
 | `_` (or `Shift + -`) | Global | **Toggle Floating Toolbar** (Show / Hide) |
-| `👨‍👩‍👧‍👦` / `👨` (Toggle) | Instructor Portal | Toggle Arrow Keys & hotkeys mode on / off |
+| `⚡` / `💤` (Toggle) | Instructor Portal | Toggle Keyboard Shortcuts Mode (Active / Paused) |
 | `↑` (ArrowUp) | Instructor Portal | **Open Assignment** & launch GitHub + Live Site links in new tabs |
 | `A` | Modal | **Toggle "Select All"** main rubric requirements |
-| `F` or `←` (ArrowLeft) | Modal | **⚡ Feedbk**: Click "Add to feedback editor", calculate & fill mark, scroll to submit |
+| `F` or `←` (ArrowLeft) | Modal | **⚡ Feedback**: Click "Add to feedback editor", calculate & preserve marks, scroll to submit |
 | `1` / `2` / `3` / `4` | Modal | **Quick Score Presets**: `1` = 60, `2` = 58, `3` = 55, `4` = 50 |
 | `Enter` or `→` (ArrowRight) | Modal | **Submit Assignment** (or `Ctrl+Enter` inside feedback editor) |
 | `J` / `PageDown` | Modal | **Scroll Down** directly to Feedback & Submit |
 | `K` / `PageUp` | Modal | **Scroll Up** to top of modal |
 | `↓` (ArrowDown) | Instructor Portal | **Close Modal** |
 | `↑` (ArrowUp) | GitHub | **Analyze Commits & Deadlines** |
-| `←` (ArrowLeft) | GitHub | **Close Tab** |
+| `B` or `Alt + ←` | Live Site | **Go Back** to previously navigated page |
+| `←` (ArrowLeft) | GitHub / Live Site | **Close Tab** |
 
 ---
 
@@ -66,11 +72,12 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 3. Switch to your assigned tab, then click **`Open`** (or press **`↑`**):
    - The evaluation modal opens.
    - The student's GitHub repo and Live Site open automatically in new tabs.
-4. Review the live site preview tab (stays clean without any toolbar).
+4. Review the live site preview tab (use the floating HUD to scroll Top/Bottom or close tab with `←`).
 5. Switch to the GitHub tab to review the commit history and deadline verification card.
 6. Return to the portal tab:
    - Press **`A`** (or click **`✓ All`**) to select all main rubric criteria.
-   - Press **`F`** or **`←`** (or click **`⚡ Feedbk`**) to transfer feedback into the editor and auto-fill marks (60 or 50 based on deadline).
+   - Adjust any specific criterion if not met (e.g. uncheck sorting).
+   - Press **`F`** or **`←`** (or click **`⚡ Feedback`**) to transfer feedback into the editor and preserve/auto-fill marks (retains calculated score such as 57, or caps at 50 if deadline missed).
    - Or click **`60`** / **`50`** (or press **`1`** / **`4`**) for instant score presets.
    - Press **`Enter`** or **`→`** (or click **`Submit`**) to submit the score.
 7. Press **`↓`** (or click **`Close`**) to dismiss the modal and proceed to the next student!

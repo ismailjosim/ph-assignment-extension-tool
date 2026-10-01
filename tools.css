@@ -1,16 +1,17 @@
-/* Modern Floating HUD Toolbar Styles */
+/* ==========================================================================
+   EVALUATOR PRO - Titanium / Obsidian HUD Floating Interface
+   Modern developer tool aesthetics inspired by Linear, Raycast & Vercel
+   ========================================================================== */
 
 #toolsId {
   all: initial;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   z-index: 2147483647;
 }
 
 #tools-container {
   position: fixed !important;
-  right: 12px !important;
+  right: 14px !important;
   top: 50% !important;
   transform: translateY(-50%) !important;
   z-index: 2147483647 !important;
@@ -25,23 +26,24 @@
   flex-direction: column !important;
   align-items: stretch !important;
   box-sizing: border-box !important;
-  gap: 7px !important;
-  padding: 10px 8px !important;
-  border-radius: 18px !important;
-  background: rgba(15, 23, 42, 0.94) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  width: 178px !important;
+  padding: 10px !important;
+  border-radius: 14px !important;
+  background: rgba(11, 15, 25, 0.92) !important;
+  backdrop-filter: blur(28px) saturate(190%) !important;
+  -webkit-backdrop-filter: blur(28px) saturate(190%) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow:
-    0 20px 45px -10px rgba(0, 0, 0, 0.75),
-    0 0 0 1px rgba(255, 255, 255, 0.08) !important;
-  animation: toolDockSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    0 24px 50px -12px rgba(0, 0, 0, 0.8),
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14) !important;
+  animation: toolDockSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 @keyframes toolDockSlideIn {
   from {
     opacity: 0;
-    transform: translateX(12px) scale(0.95);
+    transform: translateX(14px) scale(0.96);
   }
   to {
     opacity: 1;
@@ -50,200 +52,288 @@
 }
 
 .dock-handle {
-  width: 24px !important;
-  height: 4px !important;
-  margin: 0 auto 3px auto !important;
-  background: rgba(255, 255, 255, 0.22) !important;
+  width: 28px !important;
+  height: 3px !important;
+  margin: 0 auto 6px auto !important;
+  background: rgba(255, 255, 255, 0.18) !important;
   border-radius: 9999px !important;
 }
 
-/* Base button style - completely resets native browser buttonface */
+/* --------------------------------------------------------------------------
+   Dock Header & Activity Status
+   -------------------------------------------------------------------------- */
+.tool-dock-header {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 2px 6px 2px !important;
+}
+
+.tool-dock-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 10px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.9px !important;
+  color: #94a3b8 !important;
+  text-transform: uppercase !important;
+}
+
+.tool-dock-logo {
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 3.5px !important;
+  object-fit: cover !important;
+  flex-shrink: 0 !important;
+  display: inline-block !important;
+  box-shadow: 0 0 8px rgba(99, 102, 241, 0.45) !important;
+}
+
+.tool-status-dot {
+  width: 6px !important;
+  height: 6px !important;
+  border-radius: 50% !important;
+  background: #10b981 !important;
+  box-shadow: 0 0 8px #10b981 !important;
+  animation: toolPulse 2.5s infinite !important;
+}
+
+@keyframes toolPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(0.85); }
+}
+
+.tool-btn-icon-subtle {
+  all: unset !important;
+  cursor: pointer !important;
+  width: 20px !important;
+  height: 20px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  color: #64748b !important;
+  border-radius: 4px !important;
+  transition: all 0.15s ease !important;
+}
+
+.tool-btn-icon-subtle:hover {
+  color: #f1f5f9 !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Dock Sections, Labels & Dividers
+   -------------------------------------------------------------------------- */
+.tool-dock-section {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 5px !important;
+}
+
+.tool-dock-label {
+  font-size: 8.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.8px !important;
+  color: #64748b !important;
+  text-transform: uppercase !important;
+  margin-top: 1px !important;
+  margin-bottom: 2px !important;
+  padding-left: 2px !important;
+}
+
+.tool-dock-divider {
+  height: 1px !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  margin: 5px 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   Grid Layout & Micro KBD Badges
+   -------------------------------------------------------------------------- */
+.tool-grid-2 {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 5px !important;
+}
+
+.tool-kbd {
+  font-size: 9.5px !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+  font-weight: 700 !important;
+  padding: 1px 4.5px !important;
+  border-radius: 4px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+  letter-spacing: 0 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Master Base Button
+   -------------------------------------------------------------------------- */
 .tool-btn {
   all: unset !important;
   box-sizing: border-box !important;
   width: 100% !important;
-  min-width: 68px !important;
-  height: 32px !important;
+  height: 31px !important;
   display: flex !important;
   align-items: center !important;
-  justify-content: center !important;
-  text-align: center !important;
-  border-radius: 10px !important;
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue",
-    Arial, sans-serif !important;
-  font-size: 12px !important;
+  justify-content: space-between !important;
+  padding: 0 10px !important;
+  border-radius: 7px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+  font-size: 11.5px !important;
   font-weight: 600 !important;
-  letter-spacing: 0.3px !important;
+  letter-spacing: 0.15px !important;
   cursor: pointer !important;
   user-select: none !important;
-  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.14s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow:
-    0 2px 5px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    0 2px 6px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
 
 .tool-btn:hover {
-  transform: translateY(-1.5px) !important;
-  filter: brightness(1.1) !important;
+  transform: translateY(-1px) !important;
+  filter: brightness(1.08) !important;
 }
 
 .tool-btn:active {
-  transform: translateY(0.5px) scale(0.96) !important;
-  filter: brightness(0.95) !important;
+  transform: translateY(0.5px) scale(0.98) !important;
+  filter: brightness(0.94) !important;
 }
 
-/* Open Button - Violet/Indigo */
+/* --------------------------------------------------------------------------
+   Engineered Button Variants (Crisp, High-Contrast Developer Tones)
+   -------------------------------------------------------------------------- */
+/* Open Workflow Button - Deep Cobalt/Indigo */
 .tool-btn-open {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%) !important;
+  background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(167, 139, 250, 0.45) !important;
-  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.35) !important;
+  border: 1px solid rgba(165, 180, 252, 0.4) !important;
+  box-shadow: 0 3px 12px rgba(79, 70, 229, 0.35) !important;
 }
 
-/* ] Button - Dark Glass */
-.tool-btn-bracket {
+/* Feedback & Auto-Fill - Deep Amber Bronze */
+.tool-btn-focus {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(251, 191, 36, 0.45) !important;
+  box-shadow: 0 3px 10px rgba(217, 119, 6, 0.3) !important;
+}
+
+/* Submit Action - High-Performance Master Emerald */
+.tool-btn-submit {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(110, 231, 183, 0.45) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4) !important;
+}
+
+/* Select All Rubrics - Slate Charcoal with Cyan Edge */
+.tool-btn-select-all {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
+  color: #e2e8f0 !important;
+  border: 1px solid rgba(56, 189, 248, 0.3) !important;
+}
+
+/* Navigation / Jump Down */
+.tool-btn-nav {
   background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important;
   color: #cbd5e1 !important;
-  border: 1px solid rgba(255, 255, 255, 0.14) !important;
-  font-family:
-    ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-}
-
-/* Focus Button - Amber/Orange */
-.tool-btn-focus {
-  background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(251, 146, 60, 0.45) !important;
-  box-shadow: 0 4px 12px rgba(234, 88, 12, 0.35) !important;
-}
-
-/* Submit Button - Emerald/Teal */
-.tool-btn-submit {
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(52, 211, 153, 0.45) !important;
-  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4) !important;
-}
-
-/* Add Button - Cyan/Blue */
-.tool-btn-add {
-  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(34, 211, 238, 0.45) !important;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35) !important;
-}
-
-/* UnAs Button - Magenta/Fuchsia */
-.tool-btn-unas {
-  background: linear-gradient(135deg, #ec4899 0%, #d946ef 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(244, 114, 182, 0.45) !important;
-  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35) !important;
-}
-
-/* Close Button - Slate */
-.tool-btn-close {
-  background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
-  color: #e2e8f0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-}
-
-/* Arrow Keys Toggle */
-.tool-btn-arrow-active {
-  background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(251, 113, 133, 0.5) !important;
-  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4) !important;
-}
-
-.tool-btn-arrow-inactive {
-  background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
-  color: #94a3b8 !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
 }
 
-/* Reload Button - Blue */
-.tool-btn-reload {
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(96, 165, 250, 0.45) !important;
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.35) !important;
-}
-
-/* Close Stack (X) */
-.tool-btn-cross {
-  background: rgba(244, 63, 94, 0.15) !important;
-  color: #fb7185 !important;
-  border: 1px solid rgba(244, 63, 94, 0.3) !important;
-  font-size: 13px !important;
-  font-weight: 700 !important;
-}
-
-.tool-btn-cross:hover {
-  background: #f43f5e !important;
-  color: #ffffff !important;
-  border-color: #f43f5e !important;
-  box-shadow: 0 4px 12px rgba(244, 63, 94, 0.4) !important;
-}
-
-/* LiveSite & Github Buttons */
-.tool-btn-view {
-  background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(34, 211, 238, 0.45) !important;
-  box-shadow: 0 4px 12px rgba(6, 182, 212, 0.35) !important;
-}
-
-.tool-btn-action {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(167, 139, 250, 0.45) !important;
-}
-
-.tool-btn-nav {
-  background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
-  color: #e2e8f0 !important;
-  border: 1px solid rgba(255, 255, 255, 0.12) !important;
-}
-
-.tool-btn-admit {
-  background: rgba(16, 185, 129, 0.2) !important;
-  color: #34d399 !important;
-  border: 1px solid rgba(16, 185, 129, 0.4) !important;
-}
-
-/* Select All Main Rubric Button - Indigo/Sky */
-.tool-btn-select-all {
-  background: linear-gradient(135deg, #4f46e5 0%, #06b6d4 100%) !important;
-  color: #ffffff !important;
-  border: 1px solid rgba(129, 140, 248, 0.45) !important;
-  box-shadow: 0 3px 10px rgba(79, 70, 229, 0.35) !important;
-}
-
-/* Quick Score 60 Button - Vibrant Emerald */
+/* Quick Score 60 - Clean Precision Emerald */
 .tool-btn-score-60 {
-  background: linear-gradient(135deg, #10b981 0%, #047857 100%) !important;
+  background: linear-gradient(135deg, #059669 0%, #047857 100%) !important;
   color: #ffffff !important;
   border: 1px solid rgba(52, 211, 153, 0.45) !important;
   font-weight: 700 !important;
-  font-size: 13px !important;
-  box-shadow: 0 3px 10px rgba(16, 185, 129, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.28) !important;
 }
 
-/* Quick Score 50 Button - Amber / Late Deadline */
+/* Quick Score 50 - Late Submission Warm Amber */
 .tool-btn-score-50 {
-  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%) !important;
   color: #ffffff !important;
-  border: 1px solid rgba(251, 191, 36, 0.45) !important;
+  border: 1px solid rgba(251, 191, 36, 0.4) !important;
   font-weight: 700 !important;
-  font-size: 13px !important;
-  box-shadow: 0 3px 10px rgba(245, 158, 11, 0.35) !important;
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.28) !important;
 }
 
-/* Floating In-Modal Toast Indicator */
+/* GitHub Commit View - Deep Electric Cyan/Blue */
+.tool-btn-view {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(56, 189, 248, 0.4) !important;
+  box-shadow: 0 3px 12px rgba(2, 132, 199, 0.35) !important;
+}
+
+/* Tab Close Button */
+.tool-btn-arrow-active {
+  background: linear-gradient(135deg, #334155 0%, #1e293b 100%) !important;
+  color: #f1f5f9 !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+}
+
+/* Meet Auto-Admit */
+.tool-btn-admit {
+  background: rgba(16, 185, 129, 0.18) !important;
+  color: #34d399 !important;
+  border: 1px solid rgba(16, 185, 129, 0.35) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Utility Micro Toolbar & Footer
+   -------------------------------------------------------------------------- */
+.tool-dock-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 4px !important;
+  padding-top: 2px !important;
+}
+
+.tool-btn-util {
+  all: unset !important;
+  box-sizing: border-box !important;
+  height: 25px !important;
+  flex: 1 !important;
+  min-width: 25px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 6px !important;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.09) !important;
+  color: #cbd5e1 !important;
+  cursor: pointer !important;
+  transition: all 0.14s ease !important;
+}
+
+.tool-btn-util:hover {
+  background: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  transform: translateY(-1px) !important;
+}
+
+.tool-btn-util:active {
+  transform: translateY(0.5px) scale(0.96) !important;
+}
+
+/* --------------------------------------------------------------------------
+   Floating In-Modal Toast Notification
+   -------------------------------------------------------------------------- */
 .tool-toast {
   position: fixed !important;
   bottom: 28px !important;
@@ -252,14 +342,14 @@
   background: rgba(15, 23, 42, 0.95) !important;
   backdrop-filter: blur(16px) !important;
   -webkit-backdrop-filter: blur(16px) !important;
-  border: 1px solid rgba(99, 102, 241, 0.4) !important;
-  border-radius: 12px !important;
-  padding: 10px 16px !important;
+  border: 1px solid rgba(99, 102, 241, 0.45) !important;
+  border-radius: 10px !important;
+  padding: 9px 15px !important;
   color: #f8fafc !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
-  font-size: 13px !important;
+  font-size: 12.5px !important;
   font-weight: 600 !important;
-  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.6) !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.65) !important;
   display: flex !important;
   align-items: center !important;
   gap: 8px !important;
@@ -279,20 +369,22 @@
   }
 }
 
-/* GitHub Status / Result Card */
+/* --------------------------------------------------------------------------
+   GitHub Status & Inspection Card
+   -------------------------------------------------------------------------- */
 .tool-info-card {
   box-sizing: border-box !important;
   width: 100% !important;
-  border-radius: 12px !important;
+  border-radius: 10px !important;
   padding: 8px 10px !important;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   cursor: pointer !important;
   user-select: none !important;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  transition: all 0.16s cubic-bezier(0.16, 1, 0.3, 1) !important;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35) !important;
   text-align: left !important;
   line-height: 1.4 !important;
-  animation: toolDockSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  animation: toolDockSlideIn 0.22s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 
 .tool-info-card:hover {
@@ -301,5 +393,5 @@
 }
 
 .tool-info-card:active {
-  transform: scale(0.97) !important;
+  transform: scale(0.98) !important;
 }

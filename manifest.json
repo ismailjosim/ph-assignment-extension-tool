@@ -1,24 +1,22 @@
 {
-  "name": "Tools",
+  "name": "Assignment Checking Helper Tool (ACHT)",
+  "short_name": "ACHT",
   "description": "This extension is made with love and used to help a bit to all of our instructors when they are on the playground - MD. JASIM, SHAKIL & FARHAN ❤️🔥",
   "version": "2.1.0",
   "permissions": ["activeTab", "scripting", "storage"],
-  "host_permissions": [
-    "*://*.programming-hero.com/*",
-    "*://meet.google.com/*",
-    "*://github.com/*"
-  ],
+  "host_permissions": ["<all_urls>"],
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
   "action": {
-    "default_icon": "fire-love.png",
+    "default_icon": "logo.png",
     "default_popup": "index.html"
   },
   "content_scripts": [
     {
-      "matches": [
-        "*://*.programming-hero.com/*",
-        "*://meet.google.com/*",
-        "*://github.com/*"
-      ],
+      "matches": ["<all_urls>"],
       "css": ["tools.css"],
       "js": [
         "./js/buttons.js",
@@ -29,6 +27,12 @@
         "./js/instructorPortal.js",
         "app.js"
       ]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["logo.png"],
+      "matches": ["<all_urls>"]
     }
   ],
   "manifest_version": 3

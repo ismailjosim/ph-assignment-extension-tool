@@ -8,11 +8,16 @@ const displayButtons = (items) => {
     }
   }
 
+  const hasCustomLayout =
+    items.includes("tool-dock-section") || items.includes("tool-dock-header");
+  const content = hasCustomLayout
+    ? items
+    : `<div class="dock-handle"></div>${items + cross}`;
+
   btnsContainer.innerHTML = `
 <div id="tools-container">  
   <div id="my-btns">
-    <div class="dock-handle"></div>
-    ${items + cross}
+    ${content}
   </div>
 </div>
 `;
@@ -35,7 +40,11 @@ const displayButtons = (items) => {
   if (crossBtn) {
     crossBtn.addEventListener("click", function () {
       btnsContainer.innerHTML = "";
-      if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+      if (
+        typeof chrome !== "undefined" &&
+        chrome.storage &&
+        chrome.storage.local
+      ) {
         chrome.storage.local.set({ toolsEnabled: false });
       }
       localStorage.setItem("tools", JSON.stringify(false));

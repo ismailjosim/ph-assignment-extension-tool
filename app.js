@@ -39,29 +39,52 @@ const showRoutes = () => {
     currentRoute.includes("index.html") ||
     !currentRoute.startsWith("http")
   ) {
-    if (!invokeRoute("iPortal", typeof iPortal !== "undefined" ? iPortal : null)) {
+    if (
+      !invokeRoute("iPortal", typeof iPortal !== "undefined" ? iPortal : null)
+    ) {
       setTimeout(() => invokeRoute("iPortal", window.iPortal), 100);
     }
   } else {
-    // Never show menu on live site links (vercel, netlify, surge, etc.)
-    return;
+    if (
+      !invokeRoute(
+        "liveSite",
+        typeof liveSite !== "undefined" ? liveSite : null,
+      )
+    ) {
+      setTimeout(() => invokeRoute("liveSite", window.liveSite), 100);
+    }
   }
 };
 
 const toggleTools = () => {
-  const toolsId = document.getElementById("toolsId");
+  let toolsId = document.getElementById("toolsId");
+  if (!toolsId && document.body) {
+    toolsId = document.createElement("div");
+    toolsId.setAttribute("id", "toolsId");
+    document.body.insertBefore(toolsId, document.body.firstChild);
+  }
+
   const container = document.getElementById("tools-container");
+  const isVisible = toolsId && container && toolsId.innerHTML.trim() !== "";
 
   // If toolbar is currently visible, close it
-  if (toolsId && container && toolsId.innerHTML.trim() !== "") {
+  if (isVisible) {
     toolsId.innerHTML = "";
-    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.storage &&
+      chrome.storage.local
+    ) {
       chrome.storage.local.set({ toolsEnabled: false });
     }
     localStorage.setItem("tools", JSON.stringify(false));
   } else {
     // If closed, open it!
-    if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.storage &&
+      chrome.storage.local
+    ) {
       chrome.storage.local.set({ toolsEnabled: true });
     }
     localStorage.setItem("tools", JSON.stringify(true));
@@ -74,18 +97,6 @@ window.toggleTools = toggleTools;
 window.showRoutes = showRoutes;
 
 const initTools = () => {
-  const currentRoute = window.location.href;
-  // If this is a live site (not github, not meet, not programming-hero, not index.html), do nothing
-  if (
-    !currentRoute.includes("github.com") &&
-    !currentRoute.includes("meet.google.com") &&
-    !currentRoute.includes("programming-hero.com") &&
-    !currentRoute.includes("index.html") &&
-    currentRoute.startsWith("http")
-  ) {
-    return;
-  }
-
   let toolsId = document.getElementById("toolsId");
   if (!toolsId && document.body) {
     toolsId = document.createElement("div");
@@ -117,16 +128,26 @@ if (document.readyState === "loading") {
   initTools();
 }
 
-// Handle both keydown and keypress for underscore toggle
+// Handle keydown for underscore toggle (do NOT register keypress to prevent double-toggle!)
 const handleKeyToggle = (e) => {
+  // If the user is actively typing in a text field, search box, or editor, do not toggle
+  const target = e.target;
+  const isInput =
+    target &&
+    (target.tagName === "INPUT" ||
+      target.tagName === "TEXTAREA" ||
+      target.isContentEditable ||
+      target.closest(".ck-editor, .monaco-editor, [contenteditable='true']"));
+  if (isInput) return;
+
   if (
     e.key === "_" ||
     (e.code === "Minus" && e.shiftKey) ||
     (e.key === "-" && e.shiftKey)
   ) {
+    e.preventDefault();
     toggleTools();
   }
 };
 
 document.addEventListener("keydown", handleKeyToggle);
-document.addEventListener("keypress", handleKeyToggle);

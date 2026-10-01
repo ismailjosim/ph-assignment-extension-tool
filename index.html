@@ -5,103 +5,323 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tools - Assignment Checking Extension</title>
+  <title>ACHT - Assignment Checking Helper Tool</title>
+  <link rel="icon" type="image/png" href="./logo.png" />
 
   <link rel="stylesheet" href="./tools.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
-    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet" />
 
   <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-surface: #111726;
+      --bg-card: rgba(18, 24, 38, 0.7);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: rgba(99, 102, 241, 0.4);
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --accent-emerald: #10b981;
+      --accent-indigo: #6366f1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: "Plus Jakarta Sans", sans-serif;
+      width: 320px;
+      min-height: 440px;
+      background: var(--bg-primary);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 14px;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      overflow-x: hidden;
+    }
+
+    /* Top Brand Bar */
+    .brand-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .brand-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .brand-logo {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      object-fit: cover;
+      display: block;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .brand-info h1 {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.3px;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .brand-info p {
+      font-size: 10px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      padding: 3px 8px;
+      border-radius: 9999px;
+      letter-spacing: 0.4px;
+      text-transform: uppercase;
+    }
+
+    .status-dot {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent-emerald);
+      box-shadow: 0 0 6px var(--accent-emerald);
+      animation: pulseDot 2s infinite;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+
+    /* Action Control Card */
+    .control-card {
+      margin-top: 12px;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      backdrop-filter: blur(12px);
+    }
+
+    .control-card:hover {
+      background: rgba(24, 32, 51, 0.9);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-1px);
+    }
+
+    .control-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .control-sub {
+      font-size: 9.5px;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    .kbd-pill {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 2px 7px;
+      border-radius: 5px;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    /* Shortcut Reference Sections */
+    .section-title {
+      font-size: 9.5px;
+      font-weight: 800;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-top: 14px;
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .shortcut-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+    }
+
+    .shortcut-item {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 7px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .shortcut-name {
+      font-size: 10.5px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+
+    .shortcut-kbd {
+      font-family: 'JetBrains Mono', ui-monospace, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 1px 5px;
+      border-radius: 4px;
+    }
+
+    /* Footer */
+    .popup-footer {
+      margin-top: 14px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .author-link {
+      color: #818cf8;
+      text-decoration: none;
+      font-weight: 600;
+      transition: color 0.15s ease;
+    }
+
+    .author-link:hover {
+      color: #a5b4fc;
+      text-decoration: underline;
     }
   </style>
 </head>
 
-<body class="bg-slate-950 text-slate-100 w-80 p-4 select-none min-h-[360px] flex flex-col justify-between">
-  <!-- Header -->
+<body>
   <div>
-    <div class="flex items-center justify-between pb-3 border-b border-slate-800/80">
-      <div class="flex items-center gap-2.5">
-        <div
-          class="w-8 h-8 rounded-xl bg-gradient-to-tr from-violet-600 to-pink-500 flex items-center justify-center text-sm shadow-md shadow-violet-500/30">
-          🔥
-        </div>
-        <div>
-          <h1 class="text-sm font-bold tracking-tight text-white leading-tight">Instructor Tools</h1>
-          <p class="text-[11px] text-slate-400">Assignment Checker</p>
+    <!-- Brand Header -->
+    <div class="brand-header">
+      <div class="brand-left">
+        <img src="./logo.png" class="brand-logo" alt="ACHT Logo" />
+        <div class="brand-info">
+          <h1>ACHT</h1>
+          <p>Assignment Checking Helper Tool · v2.1.0</p>
         </div>
       </div>
-      <span
-        class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+      <div class="status-badge">
+        <span class="status-dot"></span>
         Ready
-      </span>
-    </div>
-
-    <!-- Quick Status & Instructions -->
-    <div
-      id="toggle-tools-btn"
-      class="mt-3 p-3 rounded-xl bg-slate-900/90 border border-slate-800/80 space-y-2 cursor-pointer hover:border-violet-500/50 hover:bg-slate-900 transition-all select-none"
-      title="Click to toggle toolbar"
-    >
-      <div class="flex items-center justify-between text-xs">
-        <span class="text-slate-400">Toggle Toolbar</span>
-        <kbd
-          class="px-2 py-0.5 rounded-md bg-slate-800 text-violet-300 font-mono text-[11px] border border-slate-700/80 shadow-inner">
-          _ (underscore)
-        </kbd>
-      </div>
-      <div class="text-[11px] text-slate-400 flex items-center gap-1.5">
-        <span>✨</span>
-        <span>Click here or press _ to show / hide toolbar</span>
       </div>
     </div>
 
-    <!-- Shortcuts Reference Card -->
-    <div class="mt-3">
-      <div class="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2">
-        Evaluation Shortcuts
+    <!-- Toggle HUD Toolbar Card -->
+    <div id="toggle-tools-btn" class="control-card" title="Click to toggle HUD toolbar">
+      <div>
+        <div class="control-label">
+          <span>HUD Floating Toolbar</span>
+        </div>
+        <div class="control-sub">Click or press hotkey to show / hide</div>
       </div>
-      <div class="grid grid-cols-2 gap-1.5 text-xs">
-        <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 flex items-center justify-between">
-          <span class="text-slate-300 text-[11px]">Open & Tabs</span>
-          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">↑ Up</kbd>
-        </div>
-        <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 flex items-center justify-between">
-          <span class="text-slate-300 text-[11px]">Select All</span>
-          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">A</kbd>
-        </div>
-        <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 flex items-center justify-between">
-          <span class="text-slate-300 text-[11px]">Feedbk & Mark</span>
-          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">F / ←</kbd>
-        </div>
-        <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 flex items-center justify-between">
-          <span class="text-slate-300 text-[11px]">Fill 60 / 50</span>
-          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">1 / 4</kbd>
-        </div>
-        <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 flex items-center justify-between">
-          <span class="text-slate-300 text-[11px]">Submit</span>
-          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">Enter / →</kbd>
-        </div>
-        <div class="p-2 rounded-lg bg-slate-900/60 border border-slate-800/60 flex items-center justify-between">
-          <span class="text-slate-300 text-[11px]">Close Modal</span>
-          <kbd class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px]">↓ Down</kbd>
-        </div>
+      <span class="kbd-pill">_ (or Shift+-)</span>
+    </div>
+
+    <!-- Keyboard Hotkey Cheatsheet -->
+    <div class="section-title">
+      <span>Workflow & Navigation</span>
+      <span style="font-weight: 500; font-size: 8.5px; opacity: 0.8;">KEYBOARD FIRST</span>
+    </div>
+    <div class="shortcut-grid">
+      <div class="shortcut-item">
+        <span class="shortcut-name">Open & Launch</span>
+        <span class="shortcut-kbd">↑ Up</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-name">Close Modal</span>
+        <span class="shortcut-kbd">↓ Down</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-name">Close Tab</span>
+        <span class="shortcut-kbd">← Left</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-name">Scroll Down</span>
+        <span class="shortcut-kbd">J</span>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <span>Evaluation & Grading</span>
+    </div>
+    <div class="shortcut-grid">
+      <div class="shortcut-item">
+        <span class="shortcut-name">Select All Rubric</span>
+        <span class="shortcut-kbd">A</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-name">Transfer Feedback</span>
+        <span class="shortcut-kbd">F</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-name">Full Marks (60)</span>
+        <span class="shortcut-kbd">1</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-name">Late Marks (50)</span>
+        <span class="shortcut-kbd">4</span>
+      </div>
+      <div class="shortcut-item" style="grid-column: span 2;">
+        <span class="shortcut-name">Submit Assignment</span>
+        <span class="shortcut-kbd">Enter ↵ or →</span>
       </div>
     </div>
   </div>
 
-  <!-- Footer -->
-  <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-[11px] text-slate-500">
-    <span>Version 2.1.0</span>
-    <span title="ISMAIL JOSIM, SHAKIL & FARHAN">Made with ❤️🔥 for Instructors</span>
+  <!-- Footer with Credits -->
+  <div class="popup-footer">
+    <span>By <a class="author-link" href="https://www.ismailjosim.com/" target="_blank" rel="noopener">ismailjosim</a></span>
+    <span>Crafted with ❤️ for Instructors</span>
   </div>
 
-  <!-- Scripts for preview and extension -->
+  <!-- Scripts -->
   <script src="./js/buttons.js"></script>
   <script src="display.js"></script>
   <script src="./js/github.js"></script>

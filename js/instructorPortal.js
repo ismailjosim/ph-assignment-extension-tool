@@ -3,20 +3,54 @@ const iPortal = () => {
     localStorage.getItem("tools-activeArrowKeys"),
   );
 
-  displayButtons(
-    openModal +
-      selectAllMain +
-      focus +
-      quick60 +
-      quick50 +
-      jumpScroll +
-      submitMark +
-      assimentAdd +
-      unassign +
-      closeModal +
-      arrowKey +
-      reload,
-  );
+  const proDockHtml = `
+<div class="tool-dock-header">
+  <div class="tool-dock-title">
+    <img src="${typeof chrome !== 'undefined' && chrome.runtime?.getURL ? chrome.runtime.getURL('logo.png') : 'logo.png'}" class="tool-dock-logo" alt="ACHT" />
+    <span>EVALUATOR</span>
+  </div>
+  ${cross}
+</div>
+
+<div class="tool-dock-section">
+  <div class="tool-dock-label">Workflow</div>
+  ${openModal}
+</div>
+
+<div class="tool-dock-divider"></div>
+
+<div class="tool-dock-section">
+  <div class="tool-dock-label">Rubric & Marks</div>
+  <div class="tool-grid-2">
+    ${selectAllMain}
+    ${jumpScroll}
+  </div>
+  ${focus}
+  <div class="tool-grid-2">
+    ${quick60}
+    ${quick50}
+  </div>
+</div>
+
+<div class="tool-dock-divider"></div>
+
+<div class="tool-dock-section">
+  <div class="tool-dock-label">Action</div>
+  ${submitMark}
+</div>
+
+<div class="tool-dock-divider"></div>
+
+<div class="tool-dock-footer">
+  ${assimentAdd}
+  ${unassign}
+  ${closeModal}
+  ${arrowKey}
+  ${reload}
+</div>
+`;
+
+  displayButtons(proDockHtml);
 
   // instructor dashboard buttons
   const focusButton = getElement(true, "focus");
@@ -179,42 +213,115 @@ const iPortal = () => {
     }
   };
 
-  // Smart Feedback transfer + Score Auto-Calculation
+  // Extract currently calculated or existing mark from the portal DOM
+  const getCalculatedOrExistingMark = () => {
+    // 1. Check the Give Mark input value directly
+    const input = findMarkInput();
+    if (input && input.value !== "" && !isNaN(Number(input.value))) {
+      const val = Number(input.value);
+      if (val > 0) return val;
+    }
+
+    // 2. Check markSuggestions element if present
+    const sugEl = document.querySelector(
+      ".markSuggestions, [class*='markSuggestions'], [class*='mark-suggestion']",
+    );
+    if (sugEl) {
+      const parsed = parseFloat(sugEl.innerText.trim().split(" ")[0]);
+      if (!isNaN(parsed) && parsed > 0) return parsed;
+    }
+
+    // 3. Check for any total / calculated score badge
+    const scoreBadges = document.querySelectorAll(
+      ".total-marks, .calculated-marks, [class*='totalMark'], [class*='rubric-score']",
+    );
+    for (const el of scoreBadges) {
+      const m = (el.innerText || "").match(/(\d+(\.\d+)?)/);
+      if (m) {
+        const val = parseFloat(m[1]);
+        if (!isNaN(val) && val > 0 && val <= 60) return val;
+      }
+    }
+
+    return null;
+  };
+
+  // Smart Feedback transfer + Score Preservation / Auto-Calculation
   const smartFeedbackAndScore = (forcedScore) => {
-    // 1. Click "Add to feedback editor"
+    // 1. Capture existing calculated mark before clicking feedback
+    const preExistingMark = getCalculatedOrExistingMark();
+
+    // 2. Click "Add to feedback editor"
     const fbBtn = findFeedbackBtn();
     if (fbBtn) {
       fbBtn.click();
     }
 
-    // 2. Determine target score
-    let targetScore = forcedScore !== undefined ? forcedScore : 60;
+    // Helper to evaluate and apply the appropriate score
+    const applyScore = (submissionData) => {
+      let finalScore = 60;
 
-    if (forcedScore === undefined) {
-      // Check stored submission metadata for deadline deductions
-      if (typeof chrome !== "undefined" && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get("latestSubmission", (data) => {
-          if (data && data.latestSubmission) {
-            const sub = data.latestSubmission;
-            if (sub.submittedAt && sub.firstDeadline) {
-              const subDate = new Date(sub.submittedAt);
-              const firstDate = new Date(sub.firstDeadline);
-              if (!isNaN(subDate) && !isNaN(firstDate) && subDate > firstDate) {
-                targetScore = sub.secondMarks || 50;
-              }
-            }
-          }
-          fillMark(targetScore);
-          scrollToSection("down");
-          showToast(`Feedback added & ${targetScore} marks set!`, "⚡");
-        });
-        return;
+      if (forcedScore !== undefined) {
+        finalScore = forcedScore;
+      } else if (preExistingMark !== null) {
+        finalScore = preExistingMark;
+      } else {
+        const postMark = getCalculatedOrExistingMark();
+        if (postMark !== null) {
+          finalScore = postMark;
+        } else {
+          finalScore = 60;
+        }
       }
-    }
 
-    fillMark(targetScore);
-    scrollToSection("down");
-    showToast(`Feedback added & ${targetScore} marks set!`, "⚡");
+      // Check deadline penalty if not manually forced
+      if (forcedScore === undefined && submissionData) {
+        const { submittedAt, firstDeadline, secondMarks } = submissionData;
+        if (submittedAt && firstDeadline) {
+          const parseDate = (str) => {
+            if (!str) return null;
+            const d = new Date(str);
+            if (!isNaN(d.getTime())) return d;
+            const cleaned = str.replace(/(\d+)\s+([A-Za-z]+),?/, "$2 $1,").trim();
+            const d2 = new Date(cleaned);
+            if (!isNaN(d2.getTime())) return d2;
+            return null;
+          };
+
+          const subDate = parseDate(submittedAt);
+          const firstDate = parseDate(firstDeadline);
+          if (subDate && firstDate && subDate > firstDate) {
+            const maxLate = secondMarks || 50;
+            finalScore = Math.min(finalScore, maxLate);
+          }
+        }
+      }
+
+      const inputMark = findMarkInput();
+      if (inputMark) {
+        if (inputMark.value === "" || Number(inputMark.value) !== finalScore) {
+          fillMark(finalScore);
+        } else {
+          inputMark.focus();
+        }
+      }
+
+      scrollToSection("down");
+      showToast(`Feedback added & ${finalScore} marks set!`, "⚡");
+    };
+
+    if (
+      forcedScore === undefined &&
+      typeof chrome !== "undefined" &&
+      chrome.storage &&
+      chrome.storage.local
+    ) {
+      chrome.storage.local.get("latestSubmission", (data) => {
+        applyScore(data ? data.latestSubmission : null);
+      });
+    } else {
+      applyScore(null);
+    }
   };
 
   // Legacy addMark function for backward compatibility
@@ -249,40 +356,141 @@ const iPortal = () => {
 
     let opened = false;
 
+    // Helper to clean, fix, and normalize student URLs (handles naked domains, leading dashes, typos)
+    const cleanAndNormalizeUrl = (raw) => {
+      if (!raw || typeof raw !== "string") return null;
+      let url = raw.trim();
+
+      // If browser relative link resolution prepended programming-hero.com:
+      // e.g. https://web.programming-hero.com/assignment-6-six-gamma.vercel.app
+      const phPrefixMatch = url.match(
+        /^https?:\/\/[^\/]*programming-hero\.com\/(https?:\/\/)?(.*)/i,
+      );
+      if (phPrefixMatch) {
+        const afterPh = phPrefixMatch[2];
+        if (afterPh.includes(".") || afterPh.includes("/")) {
+          url = afterPh;
+        }
+      }
+
+      // If the URL contains an embedded http:// or https:// anywhere (e.g. -https://, link:https://),
+      // slice directly from the http:// or https://
+      const httpIdx = url.search(/https?:\/\//i);
+      if (httpIdx !== -1) {
+        url = url.slice(httpIdx);
+      } else {
+        // Strip any leading non-alphanumeric symbols (e.g. leading dashes, colons, arrows)
+        url = url.replace(/^[^a-zA-Z0-9]+/, "");
+      }
+
+      // Remove surrounding quotes, brackets, and trailing punctuation
+      url = url.replace(/^[<"'`(\[{]+|[>"'`)\],;.]+$/g, "");
+      url = url.trim();
+
+      // If already starts with http:// or https://
+      if (/^https?:\/\//i.test(url)) return url;
+      // If starts with // (protocol-relative)
+      if (url.startsWith("//")) return "https:" + url;
+
+      // Check common hosting providers or general domain pattern
+      const domainPattern =
+        /^[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(\/.*)?$/;
+      const commonServices = [
+        "github.com",
+        ".vercel.app",
+        ".netlify.app",
+        ".surge.sh",
+        ".web.app",
+        ".firebaseapp.com",
+        ".pages.dev",
+        ".onrender.com",
+        ".gitlab.io",
+      ];
+      const matchesService = commonServices.some((s) =>
+        url.toLowerCase().includes(s),
+      );
+
+      if (domainPattern.test(url) || matchesService) {
+        return "https://" + url;
+      }
+      return null;
+    };
+
     const extractAndOpenLinks = () => {
       if (opened) return true;
 
       // Target the assignment submission data container
-      const submissionData = document.querySelector(
-        ".assignment-evaluation-form__submission-data",
-      );
+      const submissionData =
+        document.querySelector(".assignment-evaluation-form__submission-data") ||
+        document.querySelector(".assignment-evaluation-form") ||
+        document.querySelector(".modal-body");
       if (!submissionData) return false;
 
-      // Extract all links within submission data
-      const anchors = submissionData.querySelectorAll("a");
-      const urls = [];
+      const rawCandidates = [];
 
+      // 1. Extract from all <a> tags
+      const anchors = submissionData.querySelectorAll("a");
       anchors.forEach((a) => {
-        const href = a.getAttribute("href") || a.href;
-        if (
-          href &&
-          (href.startsWith("http://") || href.startsWith("https://"))
-        ) {
-          urls.push(href.trim());
-        }
+        const rawHref = a.getAttribute("href") || a.href || "";
+        const rawText = (a.innerText || a.textContent || "").trim();
+        if (rawHref) rawCandidates.push(rawHref);
+        if (rawText) rawCandidates.push(rawText);
       });
 
-      // Fallback: If no <a> tag href found, extract any URLs from text content
-      if (urls.length === 0) {
-        const text =
-          submissionData.innerText || submissionData.textContent || "";
-        const matches = text.match(/https?:\/\/[^\s"'<>]+/g);
-        if (matches) {
-          matches.forEach((url) => urls.push(url.trim()));
-        }
+      // 2. Extract full http(s) URLs directly using regex from text content
+      const text = submissionData.innerText || submissionData.textContent || "";
+      const regexMatches = text.match(/https?:\/\/[^\s"'<>]+/gi);
+      if (regexMatches) {
+        regexMatches.forEach((m) => rawCandidates.push(m));
       }
 
-      const uniqueUrls = [...new Set(urls)];
+      // 3. Extract tokens from raw text content to catch naked domains not wrapped in <a> tags
+      const tokens = text.split(/[\s\r\n\t,"'<>[\]{}()]+/);
+      tokens.forEach((token) => {
+        if (token) rawCandidates.push(token);
+      });
+
+      // 4. Normalize candidates, validate hostnames, and deduplicate
+      const uniqueUrls = [];
+      const seen = new Set();
+
+      const normalizeUrlKey = (u) => {
+        try {
+          const parsed = new URL(u);
+          let path = parsed.pathname.replace(/\/+$/, "");
+          if (parsed.hostname.toLowerCase().includes("github.com")) {
+            path = path.replace(/\.git$/i, "");
+          }
+          return `${parsed.protocol}//${parsed.hostname.toLowerCase()}${parsed.port ? ":" + parsed.port : ""}${path}${parsed.search}`;
+        } catch (e) {
+          return u.replace(/\/+$/, "").toLowerCase();
+        }
+      };
+
+      rawCandidates.forEach((candidate) => {
+        const cleaned = cleanAndNormalizeUrl(candidate);
+        if (cleaned) {
+          try {
+            const parsed = new URL(cleaned);
+            const host = parsed.hostname.toLowerCase();
+            // Skip internal portal links
+            if (host.endsWith("programming-hero.com")) {
+              return;
+            }
+            // Hostname must be valid: contain a dot, not start with hyphen, not contain "-http"
+            if (!host.includes(".") || host.startsWith("-") || host.includes("-http")) {
+              return;
+            }
+            const key = normalizeUrlKey(cleaned);
+            if (!seen.has(key)) {
+              seen.add(key);
+              uniqueUrls.push(cleaned);
+            }
+          } catch (e) {
+            // invalid URL
+          }
+        }
+      });
 
       if (uniqueUrls.length > 0) {
         opened = true;
@@ -389,13 +597,13 @@ const iPortal = () => {
   const changeArrowKey = () => {
     if (!arrowKeyBtn) return;
     if (isActiveArrowKeys) {
-      arrowKeyBtn.className = "tool-btn tool-btn-arrow-active";
-      arrowKeyBtn.innerText = "👨‍👩‍👧‍👦";
-      arrowKeyBtn.title = "Now you can use arrow keys";
+      arrowKeyBtn.className = "tool-btn-util tool-btn-arrow-active";
+      arrowKeyBtn.innerText = "⚡";
+      arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
     } else {
-      arrowKeyBtn.className = "tool-btn tool-btn-arrow-inactive";
-      arrowKeyBtn.innerText = "👨";
-      arrowKeyBtn.title = "Now you are pure single";
+      arrowKeyBtn.className = "tool-btn-util";
+      arrowKeyBtn.innerText = "💤";
+      arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
     }
   };
   changeArrowKey();
@@ -565,99 +773,112 @@ const iPortal = () => {
     });
   }
 
-  // Enhanced keyboard shortcuts for complete hands-free evaluation flow
-  document.addEventListener("keydown", function (e) {
-    if (!isActiveArrowKeys) return;
+  // Enhanced keyboard shortcuts for complete hands-free evaluation flow (guard against duplicates)
+  if (!window._iPortalKeysBound) {
+    window._iPortalKeysBound = true;
+    document.addEventListener("keydown", function (e) {
+      const active = JSON.parse(
+        localStorage.getItem("tools-activeArrowKeys") ?? "true",
+      );
+      if (!active) return;
 
-    // Check if the user is actively typing in a text field
-    const activeEl = document.activeElement;
-    const activeTag = activeEl ? activeEl.tagName : "";
-    const isTyping =
-      activeTag === "TEXTAREA" ||
-      (activeTag === "INPUT" &&
-        activeEl.type !== "checkbox" &&
-        activeEl.type !== "radio" &&
-        activeEl.type !== "button" &&
-        activeEl.type !== "submit");
+      // Check if the user is actively typing in a text field or rich editor
+      const activeEl = document.activeElement;
+      const activeTag = activeEl ? activeEl.tagName : "";
+      const isTyping =
+        activeTag === "TEXTAREA" ||
+        (activeTag === "INPUT" &&
+          activeEl.type !== "checkbox" &&
+          activeEl.type !== "radio" &&
+          activeEl.type !== "button" &&
+          activeEl.type !== "submit") ||
+        activeEl.isContentEditable ||
+        Boolean(
+          activeEl.closest &&
+            activeEl.closest(
+              ".ck-editor, .note-editor, .ql-editor, [contenteditable='true']",
+            ),
+        );
 
-    // Allow Ctrl+Enter to submit from within the feedback editor
-    if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
-      e.preventDefault();
-      submitAss();
-      return;
-    }
-
-    // Do not interfere with regular typing inside text boxes
-    if (isTyping) return;
-
-    switch (e.key) {
-      case "ArrowLeft":
-      case "f":
-      case "F":
-        e.preventDefault();
-        smartFeedbackAndScore();
-        break;
-
-      case "ArrowRight":
-      case "Enter":
+      // Allow Ctrl+Enter to submit from within the feedback editor
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
         submitAss();
-        break;
+        return;
+      }
 
-      case "ArrowUp":
-        e.preventDefault();
-        openAss();
-        break;
+      // Do not interfere with regular typing inside text boxes
+      if (isTyping) return;
 
-      case "ArrowDown":
-        e.preventDefault();
-        closeAss();
-        break;
+      switch (e.key) {
+        case "ArrowLeft":
+        case "f":
+        case "F":
+          e.preventDefault();
+          smartFeedbackAndScore();
+          break;
 
-      case "a":
-      case "A":
-        e.preventDefault();
-        toggleSelectAll();
-        break;
+        case "ArrowRight":
+        case "Enter":
+          e.preventDefault();
+          submitAss();
+          break;
 
-      case "1":
-        e.preventDefault();
-        fillMark(60);
-        break;
+        case "ArrowUp":
+          e.preventDefault();
+          openAss();
+          break;
 
-      case "2":
-        e.preventDefault();
-        fillMark(58);
-        break;
+        case "ArrowDown":
+          e.preventDefault();
+          closeAss();
+          break;
 
-      case "3":
-        e.preventDefault();
-        fillMark(55);
-        break;
+        case "a":
+        case "A":
+          e.preventDefault();
+          toggleSelectAll();
+          break;
 
-      case "4":
-        e.preventDefault();
-        fillMark(50);
-        break;
+        case "1":
+          e.preventDefault();
+          fillMark(60);
+          break;
 
-      case "j":
-      case "J":
-      case "PageDown":
-        e.preventDefault();
-        scrollToSection("down");
-        break;
+        case "2":
+          e.preventDefault();
+          fillMark(58);
+          break;
 
-      case "k":
-      case "K":
-      case "PageUp":
-        e.preventDefault();
-        scrollToSection("top");
-        break;
+        case "3":
+          e.preventDefault();
+          fillMark(55);
+          break;
 
-      default:
-        break;
-    }
-  });
+        case "4":
+          e.preventDefault();
+          fillMark(50);
+          break;
+
+        case "j":
+        case "J":
+        case "PageDown":
+          e.preventDefault();
+          scrollToSection("down");
+          break;
+
+        case "k":
+        case "K":
+        case "PageUp":
+          e.preventDefault();
+          scrollToSection("top");
+          break;
+
+        default:
+          break;
+      }
+    });
+  }
 };
 
 window.iPortal = iPortal;
