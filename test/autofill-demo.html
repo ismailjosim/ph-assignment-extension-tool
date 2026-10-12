@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>ACHT AutoFiller Test Page</title>
+  <link rel="stylesheet" href="../tools.css">
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 { color: #818cf8; margin-bottom: 8px; }
+    p { color: #94a3b8; margin-bottom: 24px; font-size: 14px; }
+    .form-box {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 24px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .form-group.full {
+      grid-column: span 2;
+    }
+    label {
+      font-size: 12px;
+      font-weight: 600;
+      color: #cbd5e1;
+    }
+    input, textarea, select {
+      padding: 9px 12px;
+      background: #090d16;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      color: #fff;
+      font-size: 13px;
+    }
+    input:focus, textarea:focus, select:focus {
+      border-color: #818cf8;
+      outline: none;
+    }
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    button.demo-btn {
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      background: #4f46e5;
+      color: white;
+    }
+    button.demo-btn.clear {
+      background: #334155;
+    }
+  </style>
+</head>
+<body>
+  <h1>⚡ ACHT AutoFiller Form Verification</h1>
+  <p>Test page for testing fake filler behavior on various HTML input types, textareas, selects, and checkboxes.</p>
+
+  <div class="btn-group" style="margin-bottom: 24px;">
+    <button class="demo-btn" onclick="window.autoFillForms()">⚡ Trigger AutoFill (or press Alt+F)</button>
+    <button class="demo-btn clear" onclick="window.clearForms()">✕ Clear Forms</button>
+  </div>
+
+  <form id="registration-form" class="form-box">
+    <h2 style="font-size: 16px; margin-bottom: 16px; color: #38bdf8;">1. User Registration & Profile</h2>
+    <div class="form-grid">
+      <div class="form-group">
+        <label for="first-name">First Name</label>
+        <input type="text" id="first-name" name="firstName" placeholder="e.g. John" required>
+      </div>
+      <div class="form-group">
+        <label for="last-name">Last Name</label>
+        <input type="text" id="last-name" name="lastName" placeholder="e.g. Doe" required>
+      </div>
+      <div class="form-group">
+        <label for="user-email">Email Address</label>
+        <input type="email" id="user-email" name="email" placeholder="john@example.com" required>
+      </div>
+      <div class="form-group">
+        <label for="user-phone">Phone Number</label>
+        <input type="tel" id="user-phone" name="phone" placeholder="01712345678">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required>
+      </div>
+      <div class="form-group">
+        <label for="confirm-password">Confirm Password</label>
+        <input type="password" id="confirm-password" name="confirmPassword" required>
+      </div>
+      <div class="form-group">
+        <label for="country">Country</label>
+        <select id="country" name="country">
+          <option value="">-- Choose Country --</option>
+          <option value="BD">Bangladesh</option>
+          <option value="US">United States</option>
+          <option value="UK">United Kingdom</option>
+          <option value="CA">Canada</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="birth-date">Date of Birth</label>
+        <input type="date" id="birth-date" name="dob">
+      </div>
+      <div class="form-group full">
+        <label for="user-bio">Bio / About Me</label>
+        <textarea id="user-bio" name="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+      </div>
+      <div class="form-group full" style="flex-direction: row; align-items: center; gap: 8px;">
+        <input type="checkbox" id="terms" name="terms" required>
+        <label for="terms">I agree to the Terms of Service and Privacy Policy</label>
+      </div>
+    </div>
+  </form>
+
+  <script src="../js/autoFiller.js"></script>
+</body>
+</html>

@@ -2,7 +2,7 @@
   "name": "Assignment Checking Helper Tool (ACHT)",
   "short_name": "ACHT",
   "description": "This extension is made with love and used to help a bit to all of our instructors when they are on the playground - MD. JASIM, SHAKIL & FARHAN ❤️🔥",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "permissions": ["activeTab", "scripting", "storage"],
   "host_permissions": ["<all_urls>"],
   "icons": {
@@ -21,6 +21,7 @@
       "js": [
         "js/buttons.js",
         "js/display.js",
+        "js/autoFiller.js",
         "js/github.js",
         "js/meet.js",
         "js/liveSite.js",

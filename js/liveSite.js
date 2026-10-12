@@ -17,6 +17,13 @@ const buildLiveSiteDockHtml = () => `
 </div>
 
 <div class="tool-dock-section">
+  <div class="tool-dock-label">Form Testing</div>
+  ${autoFill}
+</div>
+
+<div class="tool-dock-divider"></div>
+
+<div class="tool-dock-section">
   <div class="tool-dock-label">Navigation</div>
   ${scrollTop}
   ${scrollBottom}
@@ -41,9 +48,18 @@ const liveSite = () => {
   cleanupLegacyInspector();
   displayButtons(buildLiveSiteDockHtml());
 
+  const autoFillBtn = document.getElementById("autoFillBtn");
   const top = document.getElementById("scrollTop");
   const down = document.getElementById("scrollBottom");
   const back = document.getElementById("goBack");
+
+  if (autoFillBtn) {
+    autoFillBtn.addEventListener("click", function () {
+      if (typeof window.autoFillForms === "function") {
+        window.autoFillForms();
+      }
+    });
+  }
 
   if (top) {
     top.addEventListener("click", function () {

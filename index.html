@@ -10,6 +10,7 @@
 
   <link rel="stylesheet" href="./tools.css" />
   <link rel="stylesheet" href="./CSS/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
@@ -25,7 +26,7 @@
         <img src="./assets/logo.png" class="brand-logo" alt="ACHT Logo" />
         <div class="brand-info">
           <h1>ACHT</h1>
-          <p>Assignment Checking Helper Tool · v2.1.0</p>
+          <p>Assignment Checking Helper Tool · v2.2.0</p>
         </div>
       </div>
       <div class="status-badge">
@@ -43,6 +44,18 @@
         <div class="control-sub">Click or press hotkey to show / hide</div>
       </div>
       <span class="kbd-pill">_ (or Shift+-)</span>
+    </div>
+
+    <!-- Auto Filler Action Card (Fake Filler) -->
+    <div id="popup-autofill-btn" class="control-card autofill-card" title="Click to auto fill forms on active tab (Alt+F)">
+      <div>
+        <div class="control-label">
+          <i class="fa-solid fa-wand-magic-sparkles autofill-sparkle"></i>
+          <span>Fake Filler (Auto Fill Forms)</span>
+        </div>
+        <div class="control-sub" id="autofill-status-text">1-click fill all inputs, textareas & dropdowns</div>
+      </div>
+      <span class="kbd-pill">Alt+F</span>
     </div>
 
     <!-- Layout Selection Mode (Pro vs Compact) -->
@@ -69,6 +82,10 @@
       <span style="font-weight: 500; font-size: 8.5px; opacity: 0.8;">KEYBOARD FIRST</span>
     </div>
     <div class="shortcut-grid">
+      <div class="shortcut-item">
+        <span class="shortcut-name">Auto Fill Forms</span>
+        <span class="shortcut-kbd">Alt+F</span>
+      </div>
       <div class="shortcut-item">
         <span class="shortcut-name">Open & Launch</span>
         <span class="shortcut-kbd">↑ Up</span>
@@ -125,6 +142,7 @@
   <!-- Scripts -->
   <script src="./js/buttons.js"></script>
   <script src="./js/display.js"></script>
+  <script src="./js/autoFiller.js"></script>
   <script src="./js/github.js"></script>
   <script src="./js/meet.js"></script>
   <script src="./js/liveSite.js"></script>
@@ -139,6 +157,62 @@
           if (typeof window.toggleTools === "function") {
             window.toggleTools();
           }
+        });
+      }
+
+      // AutoFiller 1-click trigger from Popup
+      const autoFillCard = document.getElementById("popup-autofill-btn");
+      const statusText = document.getElementById("autofill-status-text");
+
+      if (autoFillCard) {
+        autoFillCard.addEventListener("click", () => {
+          if (typeof chrome === "undefined" || !chrome.tabs) {
+            if (typeof window.autoFillForms === "function") {
+              const res = window.autoFillForms();
+              if (statusText) {
+                statusText.textContent = res?.count > 0 ? `✓ Filled ${res.count} field(s)!` : "⚠️ No form inputs found";
+                statusText.style.color = res?.count > 0 ? "#34d399" : "#fbbf24";
+                setTimeout(() => {
+                  statusText.textContent = "1-click fill all inputs, textareas & dropdowns";
+                  statusText.style.color = "";
+                }, 2400);
+              }
+            }
+            return;
+          }
+
+          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (!tabs || !tabs[0] || !tabs[0].id) return;
+            const tabId = tabs[0].id;
+
+            chrome.tabs.sendMessage(tabId, { action: "ACHT_AUTO_FILL_FORMS" }, (response) => {
+              const handleResult = (res) => {
+                if (statusText) {
+                  const count = res?.count || 0;
+                  statusText.textContent = count > 0 ? `✓ Filled ${count} field(s)!` : "⚠️ No form inputs found";
+                  statusText.style.color = count > 0 ? "#34d399" : "#fbbf24";
+                  setTimeout(() => {
+                    statusText.textContent = "1-click fill all inputs, textareas & dropdowns";
+                    statusText.style.color = "";
+                  }, 2400);
+                }
+              };
+
+              if (chrome.runtime.lastError || !response) {
+                // Fallback execute script
+                if (chrome.scripting && chrome.scripting.executeScript) {
+                  chrome.scripting.executeScript({
+                    target: { tabId },
+                    func: () => (typeof window.autoFillForms === "function" ? window.autoFillForms() : null)
+                  }, (results) => {
+                    handleResult(results && results[0] ? results[0].result : null);
+                  });
+                }
+              } else {
+                handleResult(response);
+              }
+            });
+          });
         });
       }
 

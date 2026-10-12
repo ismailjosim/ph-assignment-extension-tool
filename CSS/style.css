@@ -131,6 +131,23 @@ body {
   transform: translateY(-1px);
 }
 
+.autofill-card {
+  background: linear-gradient(135deg, rgba(30, 27, 75, 0.65) 0%, rgba(18, 24, 38, 0.8) 100%) !important;
+  border: 1px solid rgba(139, 92, 246, 0.35) !important;
+}
+
+.autofill-card:hover {
+  background: linear-gradient(135deg, rgba(46, 16, 101, 0.8) 0%, rgba(24, 32, 51, 0.95) 100%) !important;
+  border-color: rgba(167, 139, 250, 0.6) !important;
+  box-shadow: 0 4px 18px rgba(124, 58, 237, 0.3) !important;
+}
+
+.autofill-sparkle {
+  color: #a78bfa;
+  font-size: 13px;
+  filter: drop-shadow(0 0 6px rgba(167, 139, 250, 0.7));
+}
+
 .control-label {
   font-size: 11.5px;
   font-weight: 600;

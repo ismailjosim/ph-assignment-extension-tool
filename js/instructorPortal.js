@@ -95,7 +95,10 @@ const iPortal = () => {
 
 <div class="tool-dock-section">
   <div class="tool-dock-label">Action</div>
-  ${submitMark}
+  <div style="display: grid; grid-template-columns: 1fr 34px; gap: 5px;">
+    ${submitMark}
+    ${autoFillIcon}
+  </div>
 </div>
 
 <div class="tool-dock-divider"></div>
@@ -121,6 +124,7 @@ ${compactFocus}
 ${compact60}
 ${compact50}
 ${compactSubmit}
+${compactAutoFill}
 ${compactAdd}
 ${compactUnassign}
 ${compactClose}
@@ -142,6 +146,7 @@ ${compactCross}
   const modalClose = getElement(true, "closeModal");
   const press = getElement(true, "pressE");
   const submitMarkSecondary = getElement(true, "submitMark");
+  const autoFillPortalBtn = getElement(true, "autoFillBtn");
   const addAssignment = getElement(true, "addAssignment");
   const unAssign = getElement(true, "unassign");
   const arrowKeyBtn = getElement(true, "arrowKeys");
@@ -787,21 +792,21 @@ ${compactCross}
     if (isCompact) {
       if (isActiveArrowKeys) {
         arrowKeyBtn.className = "tool-btn tool-btn-arrow-active";
-        arrowKeyBtn.innerText = "⚡";
+        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard"></i>';
         arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
       } else {
         arrowKeyBtn.className = "tool-btn tool-btn-arrow-inactive";
-        arrowKeyBtn.innerText = "💤";
+        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard" style="opacity: 0.35;"></i>';
         arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
       }
     } else {
       if (isActiveArrowKeys) {
         arrowKeyBtn.className = "tool-btn-util tool-btn-arrow-active";
-        arrowKeyBtn.innerText = "⚡";
+        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard"></i>';
         arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
       } else {
         arrowKeyBtn.className = "tool-btn-util";
-        arrowKeyBtn.innerText = "💤";
+        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard" style="opacity: 0.35;"></i>';
         arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
       }
     }
@@ -819,6 +824,15 @@ ${compactCross}
   if (submitMarkSecondary) {
     submitMarkSecondary.addEventListener("click", function () {
       submitAss();
+    });
+  }
+
+  // press auto fill (Fake Filler)
+  if (autoFillPortalBtn) {
+    autoFillPortalBtn.addEventListener("click", function () {
+      if (typeof window.autoFillForms === "function") {
+        window.autoFillForms();
+      }
     });
   }
 

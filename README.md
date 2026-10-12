@@ -39,6 +39,14 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - Dedicated **LIVE SITE** floating HUD toolbar for all student live project links (e.g., Vercel, Netlify, Surge, GitHub Pages).
 - Instant **Scroll Top** (`↑`), **Scroll Bottom** (`↓`), and **Close Tab** (`←`) controls for swift preview and review.
 
+### ⚡ Fake Filler (1-Click Form Auto Filler)
+- **Instant Dummy Data Injection**: Fills forms with 1-click on any page or student live site, just like the popular Fake Filler tool.
+- **Smart Context Recognition**: Automatically generates realistic full names, usernames, emails, secure passwords (matching confirm passwords), phone numbers, addresses, cities, countries, dates, times, numbers, and descriptive paragraphs.
+- **Full Form Support**: Automatically populates inputs, textareas, selects, radio groups, checkboxes (e.g. terms & agreements), and contenteditable elements.
+- **Framework & React Compatibility**: Uses native prototype property setters and dispatches `focus`, `input`, `change`, and `blur` events so React controlled inputs, Formik, React Hook Form, Vue `v-model`, and Angular forms update their internal state seamlessly without validation errors.
+- **Visual Feedback & Toasts**: Shows sleek glowing border animations on filled fields and displays a clean floating toast notification with the field count.
+- **Trigger Anywhere**: Available via the **⚡ Auto Fill** button on the Live Site HUD toolbar, 1-click in the extension popup, or using the global **`Alt + F`** keyboard shortcut.
+
 ### 📹 Google Meet Auto-Admit
 - Includes a dedicated auto-admit feature to automatically admit waiting students into Google Meet support sessions every 3 seconds.
 
@@ -49,6 +57,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 | Shortcut | Page / Context | Action |
 | :--- | :--- | :--- |
 | `_` (or `Shift + -`) | Global | **Toggle Floating Toolbar** (Show / Hide) |
+| `Alt + F` | Any Page / Live Site | **⚡ Auto Fill Forms** (Fake Filler 1-click test data) |
 | `⚡` / `💤` (Toggle) | Instructor Portal | Toggle Keyboard Shortcuts Mode (Active / Paused) |
 | `↑` (ArrowUp) | Instructor Portal | **Open Assignment** & launch GitHub + Live Site links in new tabs |
 | `A` | Modal | **Toggle "Select All"** main rubric requirements |
