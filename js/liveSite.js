@@ -17,7 +17,8 @@ const buildLiveSiteDockHtml = () => `
 </div>
 
 <div class="tool-dock-section">
-  <div class="tool-dock-label">Form Testing</div>
+  <div class="tool-dock-label">Testing & Theme</div>
+  ${themeToggle}
   ${autoFill}
 </div>
 
@@ -49,9 +50,18 @@ const liveSite = () => {
   displayButtons(buildLiveSiteDockHtml());
 
   const autoFillBtn = document.getElementById("autoFillBtn");
+  const themeBtn = document.getElementById("themeToggle");
   const top = document.getElementById("scrollTop");
   const down = document.getElementById("scrollBottom");
   const back = document.getElementById("goBack");
+
+  if (themeBtn) {
+    themeBtn.addEventListener("click", function () {
+      if (typeof window.togglePageTheme === "function") {
+        window.togglePageTheme();
+      }
+    });
+  }
 
   if (autoFillBtn) {
     autoFillBtn.addEventListener("click", function () {
@@ -59,6 +69,10 @@ const liveSite = () => {
         window.autoFillForms();
       }
     });
+  }
+
+  if (typeof window.updateAutoFillBtnState === "function") {
+    window.updateAutoFillBtnState();
   }
 
   if (top) {
@@ -100,6 +114,11 @@ const liveSite = () => {
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
         window.close();
+      } else if (e.altKey && (e.key === "t" || e.key === "T")) {
+        e.preventDefault();
+        if (typeof window.togglePageTheme === "function") {
+          window.togglePageTheme();
+        }
       }
     });
   }

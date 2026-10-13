@@ -579,6 +579,7 @@ ${compactCross}
   };
 
   // open ass function
+  // open ass function with robust tracking for live link menu & GitHub icon
   const openAss = () => {
     const open =
       document.querySelector("tbody .btn-eye-icon.btn-secondary") ||
@@ -592,7 +593,10 @@ ${compactCross}
       open.click();
     }
 
-    let opened = false;
+    const firstRow = open ? open.closest("tr") : document.querySelector("tbody tr");
+    const openedUrls = new Set();
+    let hasOpenedGitHub = false;
+    let hasOpenedLive = false;
 
     // Helper to clean, fix, and normalize student URLs (handles naked domains, leading dashes, typos)
     const cleanAndNormalizeUrl = (raw) => {
@@ -635,6 +639,7 @@ ${compactCross}
         /^[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(\/.*)?$/;
       const commonServices = [
         "github.com",
+        "github.io",
         ".vercel.app",
         ".netlify.app",
         ".surge.sh",
@@ -643,6 +648,11 @@ ${compactCross}
         ".pages.dev",
         ".onrender.com",
         ".gitlab.io",
+        ".railway.app",
+        ".render.com",
+        ".glitch.me",
+        ".herokuapp.com",
+        ".deno.dev"
       ];
       const matchesService = commonServices.some((s) =>
         url.toLowerCase().includes(s),
@@ -654,56 +664,134 @@ ${compactCross}
       return null;
     };
 
-    const extractAndOpenLinks = () => {
-      if (opened) return true;
-
-      // Target the assignment submission data container
-      const submissionData =
-        document.querySelector(".assignment-evaluation-form__submission-data") ||
-        document.querySelector(".assignment-evaluation-form") ||
-        document.querySelector(".modal-body");
-      if (!submissionData) return false;
-
-      const rawCandidates = [];
-
-      // 1. Extract from all <a> tags
-      const anchors = submissionData.querySelectorAll("a");
-      anchors.forEach((a) => {
-        const rawHref = a.getAttribute("href") || a.href || "";
-        const rawText = (a.innerText || a.textContent || "").trim();
-        if (rawHref) rawCandidates.push(rawHref);
-        if (rawText) rawCandidates.push(rawText);
-      });
-
-      // 2. Extract full http(s) URLs directly using regex from text content
-      const text = submissionData.innerText || submissionData.textContent || "";
-      const regexMatches = text.match(/https?:\/\/[^\s"'<>]+/gi);
-      if (regexMatches) {
-        regexMatches.forEach((m) => rawCandidates.push(m));
-      }
-
-      // 3. Extract tokens from raw text content to catch naked domains not wrapped in <a> tags
-      const tokens = text.split(/[\s\r\n\t,"'<>[\]{}()]+/);
-      tokens.forEach((token) => {
-        if (token) rawCandidates.push(token);
-      });
-
-      // 4. Normalize candidates, validate hostnames, and deduplicate
-      const uniqueUrls = [];
-      const seen = new Set();
-
-      const normalizeUrlKey = (u) => {
-        try {
-          const parsed = new URL(u);
-          let path = parsed.pathname.replace(/\/+$/, "");
-          if (parsed.hostname.toLowerCase().includes("github.com")) {
-            path = path.replace(/\.git$/i, "");
-          }
-          return `${parsed.protocol}//${parsed.hostname.toLowerCase()}${parsed.port ? ":" + parsed.port : ""}${path}${parsed.search}`;
-        } catch (e) {
-          return u.replace(/\/+$/, "").toLowerCase();
+    const normalizeUrlKey = (u) => {
+      try {
+        const parsed = new URL(u);
+        let path = parsed.pathname.replace(/\/+$/, "");
+        if (parsed.hostname.toLowerCase().includes("github.com")) {
+          path = path.replace(/\.git$/i, "");
         }
-      };
+        return `${parsed.protocol}//${parsed.hostname.toLowerCase()}${parsed.port ? ":" + parsed.port : ""}${path}${parsed.search}`;
+      } catch (e) {
+        return u.replace(/\/+$/, "").toLowerCase();
+      }
+    };
+
+    // Helper: Find and actively track the Live Link menu / dropdown button
+    const findLiveLinkMenuBtn = () => {
+      const searchRoots = [
+        document.querySelector(".assignment-evaluation-form__submission-data"),
+        document.querySelector(".assignment-evaluation-form"),
+        document.querySelector(".modal-body"),
+        document.querySelector(".modal-content"),
+        firstRow,
+        document
+      ].filter(Boolean);
+
+      for (const root of searchRoots) {
+        const candidates = root.querySelectorAll(
+          "button.dropdown-toggle, .dropdown-toggle, [data-bs-toggle='dropdown'], [data-toggle='dropdown'], button, a.btn"
+        );
+        for (const btn of candidates) {
+          const txt = (btn.innerText || btn.textContent || "").toLowerCase().trim();
+          const title = (btn.getAttribute("title") || "").toLowerCase();
+          const aria = (btn.getAttribute("aria-label") || "").toLowerCase();
+          const isLiveLink =
+            txt.includes("live link") ||
+            txt.includes("live site") ||
+            txt === "live" ||
+            txt.includes("live preview") ||
+            title.includes("live") ||
+            aria.includes("live") ||
+            btn.querySelector(".fa-globe, .fa-link, .fa-external-link, .fa-arrow-up-right-from-square");
+
+          if (isLiveLink) return btn;
+        }
+      }
+      return null;
+    };
+
+    // Actively track and open Live Link menu if it isn't open yet
+    const trackAndOpenLiveMenu = () => {
+      const menuBtn = findLiveLinkMenuBtn();
+      if (!menuBtn) return false;
+
+      const dropdownParent = menuBtn.closest(".dropdown") || menuBtn.parentElement;
+      const dropdownMenu = dropdownParent ? dropdownParent.querySelector(".dropdown-menu") : null;
+      const isExpanded =
+        menuBtn.getAttribute("aria-expanded") === "true" ||
+        menuBtn.classList.contains("show") ||
+        (dropdownParent && dropdownParent.classList.contains("show")) ||
+        (dropdownMenu && (dropdownMenu.classList.contains("show") || window.getComputedStyle(dropdownMenu).display !== "none"));
+
+      if (!isExpanded) {
+        try {
+          menuBtn.focus();
+          menuBtn.click();
+          menuBtn.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+          menuBtn.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true }));
+        } catch (e) {
+          // ignore error
+        }
+      }
+      return true;
+    };
+
+    // Extract all link candidates from page, modal, table row & open dropdowns
+    const extractCandidates = () => {
+      const rawCandidates = [];
+      const searchRoots = [
+        document.querySelector(".assignment-evaluation-form__submission-data"),
+        document.querySelector(".assignment-evaluation-form"),
+        document.querySelector(".modal-body"),
+        document.querySelector(".modal-content"),
+        ...document.querySelectorAll(".dropdown-menu, .dropdown-menu.show"),
+        firstRow
+      ].filter(Boolean);
+
+      searchRoots.forEach((root) => {
+        // 1. Anchors
+        root.querySelectorAll("a").forEach((a) => {
+          const rawHref = a.getAttribute("href") || a.href || "";
+          const rawText = (a.innerText || a.textContent || "").trim();
+          if (rawHref) rawCandidates.push(rawHref);
+          if (rawText) rawCandidates.push(rawText);
+        });
+
+        // 2. GitHub specific icons/buttons
+        root.querySelectorAll("a[href*='github.com'], .fa-github, [class*='github'], [title*='github' i]").forEach((el) => {
+          if (el.tagName === "A" && el.href) rawCandidates.push(el.href);
+          const parentA = el.closest("a");
+          if (parentA && parentA.href) rawCandidates.push(parentA.href);
+          const title = el.getAttribute("title") || "";
+          if (title.includes("github.com")) rawCandidates.push(title);
+        });
+
+        // 3. Regex on text content
+        const text = root.innerText || root.textContent || "";
+        const regexMatches = text.match(/https?:\/\/[^\s"'<>]+/gi);
+        if (regexMatches) {
+          regexMatches.forEach((m) => rawCandidates.push(m));
+        }
+
+        // 4. Tokens for naked domains
+        const tokens = text.split(/[\s\r\n\t,"'<>[\]{}()]+/);
+        tokens.forEach((token) => {
+          if (token && (token.includes(".") || token.includes("github"))) {
+            rawCandidates.push(token);
+          }
+        });
+      });
+
+      return rawCandidates;
+    };
+
+    const processAndOpenLinks = () => {
+      // Actively ensure live menu is open so dropdown items are present in DOM
+      trackAndOpenLiveMenu();
+
+      const rawCandidates = extractCandidates();
+      const newUrlsToOpen = [];
 
       rawCandidates.forEach((candidate) => {
         const cleaned = cleanAndNormalizeUrl(candidate);
@@ -712,17 +800,20 @@ ${compactCross}
             const parsed = new URL(cleaned);
             const host = parsed.hostname.toLowerCase();
             // Skip internal portal links
-            if (host.endsWith("programming-hero.com")) {
-              return;
-            }
-            // Hostname must be valid: contain a dot, not start with hyphen, not contain "-http"
-            if (!host.includes(".") || host.startsWith("-") || host.includes("-http")) {
-              return;
-            }
+            if (host.endsWith("programming-hero.com")) return;
+            // Hostname must be valid
+            if (!host.includes(".") || host.startsWith("-") || host.includes("-http")) return;
+
             const key = normalizeUrlKey(cleaned);
-            if (!seen.has(key)) {
-              seen.add(key);
-              uniqueUrls.push(cleaned);
+            if (!openedUrls.has(key)) {
+              openedUrls.add(key);
+              newUrlsToOpen.push(cleaned);
+
+              if (host.includes("github.com")) {
+                hasOpenedGitHub = true;
+              } else {
+                hasOpenedLive = true;
+              }
             }
           } catch (e) {
             // invalid URL
@@ -730,12 +821,9 @@ ${compactCross}
         }
       });
 
-      if (uniqueUrls.length > 0) {
-        opened = true;
-
+      if (newUrlsToOpen.length > 0) {
         // Scrape and save submission payload to storage
         const submissionPayload = scrapeAndStoreSubmissionData();
-
         if (
           submissionPayload &&
           typeof chrome !== "undefined" &&
@@ -743,7 +831,7 @@ ${compactCross}
           chrome.storage.local
         ) {
           const toStore = { latestSubmission: submissionPayload };
-          uniqueUrls.forEach((u) => {
+          newUrlsToOpen.forEach((u) => {
             const repoMatch = u.match(/github\.com\/([^\/]+\/[^\/\.]+)/i);
             if (repoMatch) {
               toStore[`repo_${repoMatch[1].toLowerCase()}`] = submissionPayload;
@@ -755,26 +843,28 @@ ${compactCross}
         if (press) {
           press.click();
         }
-        uniqueUrls.forEach((url) => {
+
+        newUrlsToOpen.forEach((url) => {
           window.open(url, "_blank");
         });
-        return true;
       }
 
-      return false;
+      // Return true only when BOTH GitHub and Live links have been opened
+      return hasOpenedGitHub && hasOpenedLive;
     };
 
     // Try immediately
-    if (extractAndOpenLinks()) return;
+    processAndOpenLinks();
 
-    // Retry periodically if modal / submission data takes time to render
+    // Actively track and poll for 6 seconds (up to 50 attempts) so async GitHub icon & Live menu are caught
     let attempts = 0;
-    const interval = setInterval(() => {
+    const trackerInterval = setInterval(() => {
       attempts++;
-      if (extractAndOpenLinks() || attempts >= 30) {
-        clearInterval(interval);
+      const isComplete = processAndOpenLinks();
+      if (isComplete || attempts >= 50) {
+        clearInterval(trackerInterval);
       }
-    }, 100);
+    }, 120);
   };
 
   // close opened ass function
@@ -1107,7 +1197,7 @@ ${compactCross}
 
   // Auto-scrape submission details whenever modal opens or changes
   scrapeAndStoreSubmissionData();
-  if (!window._portalObserverAttached) {
+  if (typeof MutationObserver !== "undefined" && !window._portalObserverAttached) {
     window._portalObserverAttached = true;
     const observer = new MutationObserver(() => {
       scrapeAndStoreSubmissionData();

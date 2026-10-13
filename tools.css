@@ -446,6 +446,40 @@
   box-shadow: 0 4px 16px rgba(139, 92, 246, 0.45) !important;
 }
 
+/* Disabled state for AutoFill or tools when no fields are available */
+.tool-btn-disabled,
+.tool-btn:disabled,
+button.tool-btn[disabled] {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  filter: grayscale(0.8) !important;
+  box-shadow: none !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  background: rgba(30, 41, 59, 0.7) !important;
+  color: #94a3b8 !important;
+}
+
+.tool-btn-disabled:hover,
+.tool-btn:disabled:hover,
+button.tool-btn[disabled]:hover {
+  transform: none !important;
+  filter: grayscale(0.8) !important;
+  box-shadow: none !important;
+}
+
+/* Theme Toggle Button (Light/Dark Mode) */
+.tool-btn-theme {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 3px 12px rgba(2, 132, 199, 0.35) !important;
+}
+
+.tool-btn-theme:hover {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%) !important;
+  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.45) !important;
+}
+
 /* Add Button (+10) */
 .tool-btn-add {
   background: linear-gradient(135deg, #06b6d4 0%, #0284c7 100%) !important;

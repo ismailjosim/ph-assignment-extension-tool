@@ -70,69 +70,144 @@
     button.demo-btn.clear {
       background: #334155;
     }
+    button.demo-btn.theme {
+      background: #0284c7;
+    }
+    button.demo-btn.danger {
+      background: #dc2626;
+    }
+
+    /* Target <html> with data-theme="light" */
+    html[data-theme="light"] body {
+      background: #f8fafc;
+      color: #0f172a;
+    }
+    html[data-theme="light"] h1 {
+      color: #4338ca;
+    }
+    html[data-theme="light"] p {
+      color: #475569;
+    }
+    html[data-theme="light"] .form-box {
+      background: #ffffff;
+      border-color: #cbd5e1;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+    }
+    html[data-theme="light"] label {
+      color: #334155;
+    }
+    html[data-theme="light"] input, 
+    html[data-theme="light"] textarea, 
+    html[data-theme="light"] select {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
   </style>
 </head>
 <body>
-  <h1>⚡ ACHT AutoFiller Form Verification</h1>
-  <p>Test page for testing fake filler behavior on various HTML input types, textareas, selects, and checkboxes.</p>
+  <h1>⚡ ACHT AutoFiller Form & Theme Verification</h1>
+  <p>Test page for testing fake filler behavior, real image detection, light/dark theme toggle, and 0-inputs disabled guard.</p>
 
-  <div class="btn-group" style="margin-bottom: 24px;">
-    <button class="demo-btn" onclick="window.autoFillForms()">⚡ Trigger AutoFill (or press Alt+F)</button>
+  <div class="btn-group" style="margin-bottom: 24px; flex-wrap: wrap;">
+    <button class="demo-btn" onclick="window.autoFillForms()">⚡ Trigger AutoFill (Alt+F)</button>
+    <button class="demo-btn theme" onclick="window.togglePageTheme()">☀️ Toggle Light/Dark Mode (Alt+T)</button>
     <button class="demo-btn clear" onclick="window.clearForms()">✕ Clear Forms</button>
+    <button class="demo-btn danger" onclick="toggleEmptyInputsDemo()">🚫 Toggle No-Inputs State</button>
   </div>
 
-  <form id="registration-form" class="form-box">
-    <h2 style="font-size: 16px; margin-bottom: 16px; color: #38bdf8;">1. User Registration & Profile</h2>
-    <div class="form-grid">
-      <div class="form-group">
-        <label for="first-name">First Name</label>
-        <input type="text" id="first-name" name="firstName" placeholder="e.g. John" required>
+  <div id="form-container">
+    <form id="registration-form" class="form-box">
+      <h2 style="font-size: 16px; margin-bottom: 16px; color: #38bdf8;">1. User Registration, Profile & Real Image Fields</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="first-name">First Name</label>
+          <input type="text" id="first-name" name="firstName" placeholder="e.g. John" required>
+        </div>
+        <div class="form-group">
+          <label for="last-name">Last Name</label>
+          <input type="text" id="last-name" name="lastName" placeholder="e.g. Doe" required>
+        </div>
+        <div class="form-group">
+          <label for="user-email">Email Address</label>
+          <input type="email" id="user-email" name="email" placeholder="john@example.com" required>
+        </div>
+        <div class="form-group">
+          <label for="user-phone">Phone Number</label>
+          <input type="tel" id="user-phone" name="phone" placeholder="01712345678">
+        </div>
+
+        <!-- Real Image Fields -->
+        <div class="form-group">
+          <label for="item-image">Product / Item Image URL (Real Image)</label>
+          <input type="url" id="item-image" name="imageUrl" placeholder="https://example.com/photo.jpg" required>
+        </div>
+        <div class="form-group">
+          <label for="avatar-photo">User Avatar / Profile Photo URL</label>
+          <input type="text" id="avatar-photo" name="avatarUrl" placeholder="Enter avatar photo URL">
+        </div>
+        <div class="form-group">
+          <label for="file-upload">Upload Picture File (accept="image/*")</label>
+          <input type="file" id="file-upload" name="profilePic" accept="image/*">
+        </div>
+
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input type="password" id="confirm-password" name="confirmPassword" required>
+        </div>
+        <div class="form-group">
+          <label for="country">Country</label>
+          <select id="country" name="country">
+            <option value="">-- Choose Country --</option>
+            <option value="BD">Bangladesh</option>
+            <option value="US">United States</option>
+            <option value="UK">United Kingdom</option>
+            <option value="CA">Canada</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="birth-date">Date of Birth</label>
+          <input type="date" id="birth-date" name="dob">
+        </div>
+        <div class="form-group full">
+          <label for="user-bio">Bio / About Me</label>
+          <textarea id="user-bio" name="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
+        </div>
+        <div class="form-group full" style="flex-direction: row; align-items: center; gap: 8px;">
+          <input type="checkbox" id="terms" name="terms" required>
+          <label for="terms">I agree to the Terms of Service and Privacy Policy</label>
+        </div>
       </div>
-      <div class="form-group">
-        <label for="last-name">Last Name</label>
-        <input type="text" id="last-name" name="lastName" placeholder="e.g. Doe" required>
-      </div>
-      <div class="form-group">
-        <label for="user-email">Email Address</label>
-        <input type="email" id="user-email" name="email" placeholder="john@example.com" required>
-      </div>
-      <div class="form-group">
-        <label for="user-phone">Phone Number</label>
-        <input type="tel" id="user-phone" name="phone" placeholder="01712345678">
-      </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" name="password" required>
-      </div>
-      <div class="form-group">
-        <label for="confirm-password">Confirm Password</label>
-        <input type="password" id="confirm-password" name="confirmPassword" required>
-      </div>
-      <div class="form-group">
-        <label for="country">Country</label>
-        <select id="country" name="country">
-          <option value="">-- Choose Country --</option>
-          <option value="BD">Bangladesh</option>
-          <option value="US">United States</option>
-          <option value="UK">United Kingdom</option>
-          <option value="CA">Canada</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label for="birth-date">Date of Birth</label>
-        <input type="date" id="birth-date" name="dob">
-      </div>
-      <div class="form-group full">
-        <label for="user-bio">Bio / About Me</label>
-        <textarea id="user-bio" name="bio" rows="3" placeholder="Tell us about yourself..."></textarea>
-      </div>
-      <div class="form-group full" style="flex-direction: row; align-items: center; gap: 8px;">
-        <input type="checkbox" id="terms" name="terms" required>
-        <label for="terms">I agree to the Terms of Service and Privacy Policy</label>
-      </div>
-    </div>
-  </form>
+    </form>
+  </div>
+
+  <div id="empty-state" class="form-box" style="display: none; text-align: center; padding: 40px;">
+    <h3 style="color: #fbbf24; margin-bottom: 8px;">⚠️ No Form Inputs Available on this Page</h3>
+    <p style="color: #94a3b8; margin: 0;">This simulates a page without form inputs. Try clicking AutoFill or pressing Alt+F to test the disabled alert guard!</p>
+  </div>
 
   <script src="../js/autoFiller.js"></script>
+  <script>
+    let isShowingEmpty = false;
+    function toggleEmptyInputsDemo() {
+      isShowingEmpty = !isShowingEmpty;
+      const formBox = document.getElementById("form-container");
+      const emptyState = document.getElementById("empty-state");
+      if (isShowingEmpty) {
+        formBox.style.display = "none";
+        emptyState.style.display = "block";
+      } else {
+        formBox.style.display = "block";
+        emptyState.style.display = "none";
+      }
+      if (typeof window.updateAutoFillBtnState === "function") {
+        window.updateAutoFillBtnState();
+      }
+    }
+  </script>
 </body>
 </html>

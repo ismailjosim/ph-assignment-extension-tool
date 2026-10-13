@@ -53,6 +53,10 @@ const scrollTop = `<button id='scrollTop' type='button' class='${baseClass} tool
 
 const scrollBottom = `<button id='scrollBottom' type='button' class='${baseClass} tool-btn-nav' title='Scroll to bottom of page'><span><i class="fa-solid fa-arrow-down" style="margin-right: 5px;"></i>Scroll Bottom</span><span class='tool-kbd'>↓</span></button>`;
 
+const themeToggle = `<button id='themeToggle' type='button' class='${baseClass} tool-btn-theme' title='Toggle Light / Dark Mode (data-theme="light") (Key: Alt+T)'><span><i class="fa-solid fa-circle-half-stroke" style="margin-right: 6px;"></i>Theme</span><span class='tool-kbd'>Alt+T</span></button>`;
+
+const compactTheme = `<button id='themeToggle' type='button' class='${baseClass} tool-btn-theme' title='Toggle Light / Dark Mode (Key: Alt+T)' style='justify-content: center !important; padding: 0 !important;'><i class="fa-solid fa-circle-half-stroke"></i></button>`;
+
 const goBack = `<button id='goBack' type='button' class='${baseClass} tool-btn-nav' title='Go back to previous page (Key: B or Alt+←)'><span><i class="fa-solid fa-arrow-left" style="margin-right: 5px;"></i>Go Back</span><span class='tool-kbd'>B</span></button>`;
 
 const actionBtn = `<button id='actionBtn' type='button' class='${baseClass} tool-btn-action'>Action</button>`;

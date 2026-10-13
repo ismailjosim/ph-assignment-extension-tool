@@ -58,6 +58,18 @@
       <span class="kbd-pill">Alt+F</span>
     </div>
 
+    <!-- Light & Dark Theme Toggle Card -->
+    <div id="popup-theme-btn" class="control-card theme-card" title="Click to toggle Light / Dark Mode on active tab (Alt+T)">
+      <div>
+        <div class="control-label">
+          <i class="fa-solid fa-circle-half-stroke theme-icon"></i>
+          <span>Theme Switcher (Light / Dark)</span>
+        </div>
+        <div class="control-sub" id="theme-status-text">Target &lt;html&gt; data-theme="light" / "dark"</div>
+      </div>
+      <span class="kbd-pill">Alt+T</span>
+    </div>
+
     <!-- Layout Selection Mode (Pro vs Compact) -->
     <div class="control-card layout-selector-card">
       <div class="layout-card-header">
@@ -93,6 +105,10 @@
       <div class="shortcut-item">
         <span class="shortcut-name">Close Modal</span>
         <span class="shortcut-kbd">↓ Down</span>
+      </div>
+      <div class="shortcut-item">
+        <span class="shortcut-name">Theme Toggle</span>
+        <span class="shortcut-kbd">Alt+T</span>
       </div>
       <div class="shortcut-item">
         <span class="shortcut-name">Switch Layout</span>
@@ -164,8 +180,48 @@
       const autoFillCard = document.getElementById("popup-autofill-btn");
       const statusText = document.getElementById("autofill-status-text");
 
+      // Check active tab for available input fields
+      let hasAvailableInputs = true;
+      if (typeof chrome !== "undefined" && chrome.tabs && chrome.tabs.query) {
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (!tabs || !tabs[0] || !tabs[0].id) return;
+          chrome.tabs.sendMessage(tabs[0].id, { action: "ACHT_CHECK_INPUTS" }, (response) => {
+            if (chrome.runtime.lastError || !response) return;
+            const count = response.count || 0;
+            if (count === 0) {
+              hasAvailableInputs = false;
+              autoFillCard?.classList.add("autofill-card-disabled");
+              if (statusText) {
+                statusText.textContent = "⚠️ Disabled: No input fields found on active tab";
+                statusText.style.color = "#fbbf24";
+              }
+            } else {
+              hasAvailableInputs = true;
+              autoFillCard?.classList.remove("autofill-card-disabled");
+              if (statusText) {
+                statusText.textContent = `Ready: ${count} field(s) available to fill`;
+                statusText.style.color = "";
+              }
+            }
+          });
+        });
+      }
+
       if (autoFillCard) {
         autoFillCard.addEventListener("click", () => {
+          if (!hasAvailableInputs || autoFillCard.classList.contains("autofill-card-disabled")) {
+            alert("⚠️ ACHT AutoFill: No fillable form input fields were found on the active tab.");
+            if (statusText) {
+              statusText.textContent = "⚠️ Cannot fill: No inputs available on tab!";
+              statusText.style.color = "#ef4444";
+              setTimeout(() => {
+                statusText.textContent = "⚠️ Disabled: No input fields found on active tab";
+                statusText.style.color = "#fbbf24";
+              }, 2500);
+            }
+            return;
+          }
+
           if (typeof chrome === "undefined" || !chrome.tabs) {
             if (typeof window.autoFillForms === "function") {
               const res = window.autoFillForms();
@@ -210,6 +266,61 @@
                 }
               } else {
                 handleResult(response);
+              }
+            });
+          });
+        });
+      }
+
+      // Theme Switcher trigger from Popup
+      const themeCard = document.getElementById("popup-theme-btn");
+      const themeStatusText = document.getElementById("theme-status-text");
+
+      if (themeCard) {
+        themeCard.addEventListener("click", () => {
+          if (typeof chrome === "undefined" || !chrome.tabs) {
+            if (typeof window.togglePageTheme === "function") {
+              const newTheme = window.togglePageTheme();
+              if (themeStatusText) {
+                themeStatusText.textContent = `✓ Set data-theme="${newTheme}"`;
+                themeStatusText.style.color = newTheme === "light" ? "#38bdf8" : "#a855f7";
+                setTimeout(() => {
+                  themeStatusText.textContent = 'Target <html> data-theme="light" / "dark"';
+                  themeStatusText.style.color = "";
+                }, 2000);
+              }
+            }
+            return;
+          }
+
+          chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+            if (!tabs || !tabs[0] || !tabs[0].id) return;
+            const tabId = tabs[0].id;
+
+            chrome.tabs.sendMessage(tabId, { action: "ACHT_TOGGLE_THEME" }, (response) => {
+              const handleThemeResult = (res) => {
+                if (themeStatusText) {
+                  const theme = res?.theme || "toggled";
+                  themeStatusText.textContent = `✓ Switched to ${theme} (data-theme="${theme}")!`;
+                  themeStatusText.style.color = theme === "light" ? "#38bdf8" : "#a855f7";
+                  setTimeout(() => {
+                    themeStatusText.textContent = 'Target <html> data-theme="light" / "dark"';
+                    themeStatusText.style.color = "";
+                  }, 2200);
+                }
+              };
+
+              if (chrome.runtime.lastError || !response) {
+                if (chrome.scripting && chrome.scripting.executeScript) {
+                  chrome.scripting.executeScript({
+                    target: { tabId },
+                    func: () => (typeof window.togglePageTheme === "function" ? window.togglePageTheme() : null)
+                  }, (results) => {
+                    handleThemeResult({ theme: results && results[0] ? results[0].result : "toggled" });
+                  });
+                }
+              } else {
+                handleThemeResult(response);
               }
             });
           });

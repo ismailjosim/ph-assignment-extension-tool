@@ -440,6 +440,20 @@ const github = () => {
   // Automatically analyze repository on load after brief delays for DOM to settle
   setTimeout(gitAction, 300);
   setTimeout(gitAction, 1000);
+  setTimeout(gitAction, 2000);
+  setTimeout(gitAction, 3500);
+
+  // Observer to trigger analysis as soon as relative-time is rendered by GitHub
+  if (typeof MutationObserver !== "undefined" && !window._githubTimeObserverAttached) {
+    window._githubTimeObserverAttached = true;
+    const timeObs = new MutationObserver(() => {
+      const rt = document.querySelector("relative-time");
+      if (rt && (!window._lastRenderedCardHash || window._lastRenderedCardHash.includes("Date N/A"))) {
+        gitAction();
+      }
+    });
+    timeObs.observe(document.body || document.documentElement, { childList: true, subtree: true });
+  }
 
   // Real-time listener: Update GitHub card live when instructor portal updates submission (debounced)
   if (!window._githubStorageListenerBound) {

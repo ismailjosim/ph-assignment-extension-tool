@@ -128,6 +128,17 @@ if (document.readyState === "loading") {
   initTools();
 }
 
+// GitHub SPA Navigation events (Turbo & PJAX)
+window.addEventListener("turbo:load", () => {
+  initTools();
+});
+window.addEventListener("turbo:render", () => {
+  initTools();
+});
+window.addEventListener("pjax:end", () => {
+  initTools();
+});
+
 // Handle keydown for underscore toggle (do NOT register keypress to prevent double-toggle!)
 const handleKeyToggle = (e) => {
   // If the user is actively typing in a text field, search box, or editor, do not toggle

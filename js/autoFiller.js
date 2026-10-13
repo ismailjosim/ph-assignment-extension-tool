@@ -55,6 +55,54 @@
     domains: ["gmail.com", "example.com", "testmail.org", "devmail.io"]
   };
 
+  // High-Resolution Real Images (Unsplash, Google & Curated Real Assets)
+  const REAL_IMAGES = {
+    products: [
+      "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=800&auto=format&fit=crop&q=80", // Modern minimalist watch
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&auto=format&fit=crop&q=80", // Premium headphones
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80", // Red sneaker
+      "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=800&auto=format&fit=crop&q=80", // Classic camera
+      "https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=800&auto=format&fit=crop&q=80", // Designer sunglasses
+      "https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&auto=format&fit=crop&q=80"  // Pet / Toy
+    ],
+    avatars: [
+      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80", // Female portrait
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop&q=80", // Male smiling portrait
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&auto=format&fit=crop&q=80", // Casual portrait
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=600&auto=format&fit=crop&q=80", // Professional headshot
+      "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=600&auto=format&fit=crop&q=80"  // Girl profile
+    ],
+    banners: [
+      "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=1200&auto=format&fit=crop&q=80", // Yosemite lake reflection
+      "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=1200&auto=format&fit=crop&q=80", // Misty mountain forest
+      "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=1200&auto=format&fit=crop&q=80", // Golden valley
+      "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=1200&auto=format&fit=crop&q=80"  // Forest path
+    ],
+    tech: [
+      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=900&auto=format&fit=crop&q=80", // Laptop workspace coding
+      "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=900&auto=format&fit=crop&q=80", // Web development screen
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=900&auto=format&fit=crop&q=80"  // Programming syntax
+    ],
+    food: [
+      "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=900&auto=format&fit=crop&q=80", // Fresh salad bowl
+      "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=900&auto=format&fit=crop&q=80", // Gourmet pizza
+      "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=900&auto=format&fit=crop&q=80"  // Pancakes with syrup
+    ],
+    google: [
+      "https://lh3.googleusercontent.com/d/1B-cK9-W6qE1bWjU0V_5Q3A",
+      "https://picsum.photos/id/1018/800/600",
+      "https://picsum.photos/id/1025/800/600"
+    ]
+  };
+
+  const getCustomImageUrl = () => {
+    try {
+      return localStorage.getItem("acht-custom-image-url") || null;
+    } catch (e) {
+      return null;
+    }
+  };
+
   const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
 
@@ -63,11 +111,11 @@
    */
   const setNativeValue = (element, value) => {
     let prototype;
-    if (element instanceof HTMLInputElement) {
+    if (typeof window.HTMLInputElement !== "undefined" && element instanceof window.HTMLInputElement) {
       prototype = window.HTMLInputElement.prototype;
-    } else if (element instanceof HTMLTextAreaElement) {
+    } else if (typeof window.HTMLTextAreaElement !== "undefined" && element instanceof window.HTMLTextAreaElement) {
       prototype = window.HTMLTextAreaElement.prototype;
-    } else if (element instanceof HTMLSelectElement) {
+    } else if (typeof window.HTMLSelectElement !== "undefined" && element instanceof window.HTMLSelectElement) {
       prototype = window.HTMLSelectElement.prototype;
     }
 
@@ -88,7 +136,8 @@
    * Sets checked state for checkboxes and radios with React synthetic events support
    */
   const setNativeChecked = (element, checked) => {
-    const descriptor = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "checked");
+    const proto = typeof window.HTMLInputElement !== "undefined" ? window.HTMLInputElement.prototype : null;
+    const descriptor = proto ? Object.getOwnPropertyDescriptor(proto, "checked") : null;
     if (descriptor && descriptor.set) {
       descriptor.set.call(element, checked);
     } else {
@@ -196,14 +245,36 @@
       return getRandomItem(DATA.jobTitles);
     }
 
-    // 7. URLs
+    // 7. Image / Photo fields (type="url" or text or image with image/photo descriptor)
+    if (
+      /(image|photo|avatar|picture|thumbnail|banner|poster|icon|screenshot|img_url|image_url|photourl|profile_pic|cover_photo|product_img)/i.test(desc)
+    ) {
+      const customImg = getCustomImageUrl();
+      if (customImg && customImg.trim()) return customImg.trim();
+
+      if (/(avatar|profile|user|author|member|person|face|student)/i.test(desc)) {
+        return getRandomItem(REAL_IMAGES.avatars);
+      }
+      if (/(banner|cover|hero|landscape|travel|hotel|room|view|tour|nature)/i.test(desc)) {
+        return getRandomItem(REAL_IMAGES.banners);
+      }
+      if (/(food|recipe|dish|meal|restaurant|cafe|drink|coffee)/i.test(desc)) {
+        return getRandomItem(REAL_IMAGES.food);
+      }
+      if (/(tech|code|developer|project|portfolio|laptop|programming)/i.test(desc)) {
+        return getRandomItem(REAL_IMAGES.tech);
+      }
+      return getRandomItem(REAL_IMAGES.products);
+    }
+
+    // 8. URLs (Non-image)
     if (type === "url" || /(website|site|url|web|link|portfolio|github|linkedin)/i.test(desc)) {
       if (/github/i.test(desc)) return `https://github.com/${context.firstName.toLowerCase()}-dev`;
       if (/linkedin/i.test(desc)) return `https://linkedin.com/in/${context.firstName.toLowerCase()}-dev`;
       return "https://developer-portfolio-showcase.netlify.app";
     }
 
-    // 8. Number inputs
+    // 9. Number inputs
     if (type === "number") {
       const min = input.min !== "" ? parseFloat(input.min) : null;
       const max = input.max !== "" ? parseFloat(input.max) : null;
@@ -279,9 +350,10 @@
    * Displays modern glowing highlight on filled elements
    */
   const highlightElement = (el) => {
+    if (!el || !el.classList) return;
     el.classList.add("acht-autofill-highlight");
     setTimeout(() => {
-      el.classList.remove("acht-autofill-highlight");
+      if (el && el.classList) el.classList.remove("acht-autofill-highlight");
     }, 1500);
   };
 
@@ -308,7 +380,9 @@
     setTimeout(() => {
       toast.style.opacity = "0";
       toast.style.transform = "translateY(10px) scale(0.95)";
-      setTimeout(() => toast.remove(), 250);
+      setTimeout(() => {
+        if (toast && typeof toast.remove === "function") toast.remove();
+      }, 250);
     }, 2800);
   };
 
@@ -327,7 +401,7 @@
     }
 
     const type = (el.type || "").toLowerCase();
-    if (type === "hidden" || type === "button" || type === "submit" || type === "reset" || type === "image" || type === "file") {
+    if (type === "hidden" || type === "button" || type === "submit" || type === "reset" || type === "image") {
       return false;
     }
 
@@ -346,9 +420,104 @@
   };
 
   /**
+   * Counts all fillable inputs, textareas, selects, and contenteditables on the page
+   */
+  const getFillableInputsCount = (scopeElement = document) => {
+    let count = 0;
+    const candidates = scopeElement.querySelectorAll(
+      "input:not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']), textarea, select, [contenteditable='true']"
+    );
+    for (const el of candidates) {
+      if (isFillable(el)) count++;
+    }
+    return count;
+  };
+
+  /**
+   * Updates disabled visual state and titles of all AutoFill buttons across active HUD toolbars
+   */
+  const updateAutoFillBtnState = () => {
+    const count = getFillableInputsCount(document);
+    const btns = document.querySelectorAll("#autoFillBtn");
+    btns.forEach((btn) => {
+      if (count === 0) {
+        btn.classList.add("tool-btn-disabled");
+        btn.setAttribute("aria-disabled", "true");
+        btn.title = "⚠️ AutoFill Disabled: No input fields found on this page";
+      } else {
+        btn.classList.remove("tool-btn-disabled");
+        btn.removeAttribute("aria-disabled");
+        btn.title = `Auto fill all ${count} form inputs (Key: Alt+F)`;
+      }
+    });
+    return count;
+  };
+
+  /**
+   * Theme Switcher: Targets <html> element and sets data-theme="light" / data-theme="dark"
+   */
+  const togglePageTheme = () => {
+    const html = document.documentElement || document.querySelector("html");
+    if (!html) return "dark";
+
+    const currentTheme = (html.getAttribute("data-theme") || "").toLowerCase();
+    const newTheme = currentTheme === "light" ? "dark" : "light";
+
+    // Target html tag and set data-theme="light" or "dark"
+    html.setAttribute("data-theme", newTheme);
+
+    // Sync class for Tailwind darkMode: "class"
+    if (newTheme === "light") {
+      html.classList.remove("dark");
+      html.classList.add("light");
+    } else {
+      html.classList.remove("light");
+      html.classList.add("dark");
+    }
+
+    // Update buttons in DOM
+    const themeBtns = document.querySelectorAll("#themeToggle");
+    themeBtns.forEach((btn) => {
+      const isCompact = btn.children.length === 1 && btn.querySelector("i");
+      if (isCompact) {
+        btn.innerHTML = newTheme === "light"
+          ? '<i class="fa-solid fa-moon"></i>'
+          : '<i class="fa-solid fa-sun"></i>';
+      } else {
+        btn.innerHTML = newTheme === "light"
+          ? `<span><i class="fa-solid fa-moon" style="margin-right: 6px;"></i>Dark Mode</span><span class='tool-kbd'>Alt+T</span>`
+          : `<span><i class="fa-solid fa-sun" style="margin-right: 6px;"></i>Light Mode</span><span class='tool-kbd'>Alt+T</span>`;
+      }
+    });
+
+    showToast(
+      newTheme === "light"
+        ? 'Theme: Light Mode (data-theme="light") ☀️'
+        : 'Theme: Dark Mode (data-theme="dark") 🌙'
+    );
+
+    return newTheme;
+  };
+
+  /**
    * Main AutoFill Function
    */
   const autoFillForms = (scopeElement = document) => {
+    // 0. Verify that at least one fillable input field is available
+    const availableCount = getFillableInputsCount(scopeElement);
+    if (availableCount === 0) {
+      updateAutoFillBtnState();
+      showToast("⚠️ AutoFill Disabled: No input fields available on this page!", true);
+      alert("⚠️ ACHT AutoFill: No fillable form input fields were found on this page.");
+      return {
+        success: false,
+        count: 0,
+        forms: 0,
+        disabled: true,
+        message: "No fillable input fields found"
+      };
+    }
+
     // Session context so passwords and names stay consistent in the same form
     const firstName = getRandomItem(DATA.firstNames);
     const lastName = getRandomItem(DATA.lastNames);
@@ -456,6 +625,47 @@
       }
     });
 
+    // 6. Fill File Inputs for Images (e.g. <input type="file" accept="image/*">)
+    const fileInputs = scopeElement.querySelectorAll("input[type='file']");
+    fileInputs.forEach((fileInput) => {
+      if (fileInput.closest("#toolsId") || fileInput.closest("#tools-container")) return;
+      if (fileInput.disabled || fileInput.readOnly) return;
+      const accept = (fileInput.getAttribute("accept") || "").toLowerCase();
+      const desc = getFieldDescriptor(fileInput);
+      if (accept.includes("image") || /(photo|avatar|image|pic|img)/i.test(desc)) {
+        try {
+          const canvas = document.createElement("canvas");
+          canvas.width = 200;
+          canvas.height = 200;
+          const ctx = canvas.getContext("2d");
+          const grad = ctx.createLinearGradient(0, 0, 200, 200);
+          grad.addColorStop(0, "#4f46e5");
+          grad.addColorStop(1, "#06b6d4");
+          ctx.fillStyle = grad;
+          ctx.fillRect(0, 0, 200, 200);
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 20px sans-serif";
+          ctx.textAlign = "center";
+          ctx.fillText("ACHT Photo", 100, 105);
+
+          canvas.toBlob((blob) => {
+            if (!blob) return;
+            const file = new File([blob], "real-photo.png", { type: "image/png" });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInput.files = dt.files;
+            fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+            fileInput.dispatchEvent(new Event("input", { bubbles: true }));
+            highlightElement(fileInput);
+            filledCount++;
+            if (fileInput.form) formsFound.add(fileInput.form);
+          }, "image/png");
+        } catch (e) {
+          // Ignore canvas errors
+        }
+      }
+    });
+
     // Provide user feedback
     if (filledCount > 0) {
       const formText = formsFound.size > 0 ? ` across ${formsFound.size} form(s)` : "";
@@ -463,6 +673,8 @@
     } else {
       showToast("No fillable form inputs found on this page.", true);
     }
+
+    updateAutoFillBtnState();
 
     return {
       success: true,
@@ -498,20 +710,53 @@
     });
 
     showToast(`Cleared ${clearedCount} field(s).`);
+    updateAutoFillBtnState();
     return { success: true, count: clearedCount };
   };
 
   // Attach global functions to window
   window.autoFillForms = autoFillForms;
   window.clearForms = clearForms;
+  window.showToast = showToast;
+  window.togglePageTheme = togglePageTheme;
+  window.getFillableInputsCount = getFillableInputsCount;
+  window.updateAutoFillBtnState = updateAutoFillBtnState;
 
-  // Global Keyboard Shortcut: Alt + F
+  // Intercept button clicks when AutoFill is disabled
+  document.addEventListener("click", (e) => {
+    const autoBtn = e.target.closest("#autoFillBtn");
+    if (autoBtn && autoBtn.classList.contains("tool-btn-disabled")) {
+      e.preventDefault();
+      e.stopPropagation();
+      showToast("⚠️ AutoFill Disabled: No input fields available on this page!", true);
+      alert("⚠️ ACHT AutoFill: No fillable form input fields were found on this page.");
+    }
+  }, true);
+
+  // Global Keyboard Shortcut: Alt + F (AutoFill) and Alt + T (Theme Toggle)
   document.addEventListener("keydown", (e) => {
     if (e.altKey && (e.key === "f" || e.key === "F" || e.code === "KeyF")) {
       e.preventDefault();
       autoFillForms();
+    } else if (e.altKey && (e.key === "t" || e.key === "T" || e.code === "KeyT")) {
+      e.preventDefault();
+      togglePageTheme();
     }
   });
+
+  // Keep button states updated as DOM changes
+  if (typeof MutationObserver !== "undefined" && !window._achtAutoFillObserverAttached) {
+    window._achtAutoFillObserverAttached = true;
+    let _debounceTimer = null;
+    const observer = new MutationObserver(() => {
+      if (_debounceTimer) clearTimeout(_debounceTimer);
+      _debounceTimer = setTimeout(updateAutoFillBtnState, 350);
+    });
+    if (document.body) {
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+    setTimeout(updateAutoFillBtnState, 600);
+  }
 
   // Listen for messages from popup or background
   if (typeof chrome !== "undefined" && chrome.runtime?.onMessage) {
@@ -523,6 +768,14 @@
       } else if (request && request.action === "ACHT_CLEAR_FORMS") {
         const result = clearForms();
         sendResponse(result);
+        return true;
+      } else if (request && request.action === "ACHT_TOGGLE_THEME") {
+        const theme = togglePageTheme();
+        sendResponse({ success: true, theme });
+        return true;
+      } else if (request && request.action === "ACHT_CHECK_INPUTS") {
+        const count = getFillableInputsCount(document);
+        sendResponse({ success: true, count });
         return true;
       }
     });
