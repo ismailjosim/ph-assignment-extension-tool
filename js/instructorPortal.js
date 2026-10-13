@@ -597,6 +597,37 @@ ${compactCross}
     const openedUrls = new Set();
     let hasOpenedGitHub = false;
     let hasOpenedLive = false;
+    let hasToggledLiveMenu = false;
+
+    // Disallowed file extensions (files from rubric instructions or text, NOT websites)
+    const invalidFileExtRegex =
+      /\.(png|jpe?g|gif|webp|svg|ico|pdf|zip|rar|tar|gz|7z|doc|docx|ppt|pptx|xls|xlsx|txt|mp3|mp4|avi|mov|mkv|css|scss|sass|less|js|jsx|ts|tsx|json|xml|html?|vue|py|c|cpp|cs|java|go|rs|rb|php|sh|bat|exe|apk|dmg|iso|wasm|map|lock|ya?ml|env|md)$/i;
+
+    // Common hosting providers for student projects
+    const commonServices = [
+      "github.com",
+      "github.io",
+      ".vercel.app",
+      ".netlify.app",
+      ".surge.sh",
+      ".web.app",
+      ".firebaseapp.com",
+      ".pages.dev",
+      ".onrender.com",
+      ".gitlab.io",
+      ".railway.app",
+      ".render.com",
+      ".glitch.me",
+      ".herokuapp.com",
+      ".deno.dev",
+      ".fly.dev",
+      ".amplifyapp.com",
+      ".cloudflarepages.dev"
+    ];
+
+    // Standard web Top-Level Domains for naked domains
+    const validWebTldPattern =
+      /^[a-zA-Z0-9][-a-zA-Z0-9]*\.(com|org|net|edu|io|co|app|dev|me|live|tech|xyz|site|online|store|agency|digital|space|cloud|link|world|global|pro|page)(\/.*)?$/i;
 
     // Helper to clean, fix, and normalize student URLs (handles naked domains, leading dashes, typos)
     const cleanAndNormalizeUrl = (raw) => {
@@ -629,36 +660,27 @@ ${compactCross}
       url = url.replace(/^[<"'`(\[{]+|[>"'`)\],;.]+$/g, "");
       url = url.trim();
 
+      // Reject empty or purely numeric strings / marks (e.g. "60.00", "1.2", "10")
+      if (!url || /^\d+(\.\d+)?$/.test(url)) return null;
+
+      // Reject common abbreviations or rubric numbering (e.g. "e.g.", "i.e.", "v1.0")
+      if (/^(e\.g\.|i\.e\.|etc\.|v\d+|mr\.|mrs\.|ms\.|dr\.)/i.test(url)) return null;
+
+      // Check URL path (without query params) to reject file extensions
+      const pathPart = url.split("?")[0].split("#")[0];
+      if (invalidFileExtRegex.test(pathPart)) return null;
+
       // If already starts with http:// or https://
       if (/^https?:\/\//i.test(url)) return url;
       // If starts with // (protocol-relative)
       if (url.startsWith("//")) return "https:" + url;
 
-      // Check common hosting providers or general domain pattern
-      const domainPattern =
-        /^[a-zA-Z0-9][-a-zA-Z0-9]*(\.[a-zA-Z0-9][-a-zA-Z0-9]*)+(\/.*)?$/;
-      const commonServices = [
-        "github.com",
-        "github.io",
-        ".vercel.app",
-        ".netlify.app",
-        ".surge.sh",
-        ".web.app",
-        ".firebaseapp.com",
-        ".pages.dev",
-        ".onrender.com",
-        ".gitlab.io",
-        ".railway.app",
-        ".render.com",
-        ".glitch.me",
-        ".herokuapp.com",
-        ".deno.dev"
-      ];
-      const matchesService = commonServices.some((s) =>
-        url.toLowerCase().includes(s),
-      );
+      // Check common hosting providers or recognized web TLDs
+      const lower = url.toLowerCase();
+      const matchesService = commonServices.some((s) => lower.includes(s));
+      const matchesTld = validWebTldPattern.test(url);
 
-      if (domainPattern.test(url) || matchesService) {
+      if (matchesService || matchesTld) {
         return "https://" + url;
       }
       return null;
@@ -677,43 +699,34 @@ ${compactCross}
       }
     };
 
-    // Helper: Find and actively track the Live Link menu / dropdown button
-    const findLiveLinkMenuBtn = () => {
-      const searchRoots = [
-        document.querySelector(".assignment-evaluation-form__submission-data"),
-        document.querySelector(".assignment-evaluation-form"),
-        document.querySelector(".modal-body"),
-        document.querySelector(".modal-content"),
-        firstRow,
-        document
-      ].filter(Boolean);
+    // Helper: Find Live Link dropdown or toggle button specifically within the submission section
+    const findLiveLinkMenuBtn = (submissionContainer) => {
+      if (!submissionContainer) return null;
+      const candidates = submissionContainer.querySelectorAll(
+        "button.dropdown-toggle, .dropdown-toggle, [data-bs-toggle='dropdown'], [data-toggle='dropdown'], button, a.btn"
+      );
+      for (const btn of candidates) {
+        const txt = (btn.innerText || btn.textContent || "").toLowerCase().trim();
+        const title = (btn.getAttribute("title") || "").toLowerCase();
+        const aria = (btn.getAttribute("aria-label") || "").toLowerCase();
+        const isLiveLink =
+          txt.includes("live link") ||
+          txt.includes("live site") ||
+          txt === "live" ||
+          txt.includes("live preview") ||
+          title.includes("live") ||
+          aria.includes("live") ||
+          btn.querySelector(".fa-globe, .fa-link, .fa-external-link, .fa-arrow-up-right-from-square");
 
-      for (const root of searchRoots) {
-        const candidates = root.querySelectorAll(
-          "button.dropdown-toggle, .dropdown-toggle, [data-bs-toggle='dropdown'], [data-toggle='dropdown'], button, a.btn"
-        );
-        for (const btn of candidates) {
-          const txt = (btn.innerText || btn.textContent || "").toLowerCase().trim();
-          const title = (btn.getAttribute("title") || "").toLowerCase();
-          const aria = (btn.getAttribute("aria-label") || "").toLowerCase();
-          const isLiveLink =
-            txt.includes("live link") ||
-            txt.includes("live site") ||
-            txt === "live" ||
-            txt.includes("live preview") ||
-            title.includes("live") ||
-            aria.includes("live") ||
-            btn.querySelector(".fa-globe, .fa-link, .fa-external-link, .fa-arrow-up-right-from-square");
-
-          if (isLiveLink) return btn;
-        }
+        if (isLiveLink) return btn;
       }
       return null;
     };
 
-    // Actively track and open Live Link menu if it isn't open yet
-    const trackAndOpenLiveMenu = () => {
-      const menuBtn = findLiveLinkMenuBtn();
+    // Actively track and open Live Link menu once if it isn't open yet
+    const trackAndOpenLiveMenu = (submissionContainer) => {
+      if (hasToggledLiveMenu || !submissionContainer) return false;
+      const menuBtn = findLiveLinkMenuBtn(submissionContainer);
       if (!menuBtn) return false;
 
       const dropdownParent = menuBtn.closest(".dropdown") || menuBtn.parentElement;
@@ -726,10 +739,8 @@ ${compactCross}
 
       if (!isExpanded) {
         try {
-          menuBtn.focus();
+          hasToggledLiveMenu = true;
           menuBtn.click();
-          menuBtn.dispatchEvent(new MouseEvent("mousedown", { bubbles: true, cancelable: true }));
-          menuBtn.dispatchEvent(new MouseEvent("mouseup", { bubbles: true, cancelable: true }));
         } catch (e) {
           // ignore error
         }
@@ -737,29 +748,36 @@ ${compactCross}
       return true;
     };
 
-    // Extract all link candidates from page, modal, table row & open dropdowns
+    // Extract link candidates ONLY from the student's submission container
     const extractCandidates = () => {
+      // Target ONLY the student's submission data container (never rubrics or whole table row)
+      const submissionData =
+        document.querySelector(".assignment-evaluation-form__submission-data") ||
+        document.querySelector("[class*='submission-data']") ||
+        document.querySelector(".assignment-evaluation-form") ||
+        document.querySelector(".modal-body");
+
+      if (!submissionData) return { rawCandidates: [], container: null };
+
+      trackAndOpenLiveMenu(submissionData);
+
       const rawCandidates = [];
-      const searchRoots = [
-        document.querySelector(".assignment-evaluation-form__submission-data"),
-        document.querySelector(".assignment-evaluation-form"),
-        document.querySelector(".modal-body"),
-        document.querySelector(".modal-content"),
-        ...document.querySelectorAll(".dropdown-menu, .dropdown-menu.show"),
-        firstRow
+      const searchScopes = [
+        submissionData,
+        ...document.querySelectorAll(".dropdown-menu.show, .dropdown-menu")
       ].filter(Boolean);
 
-      searchRoots.forEach((root) => {
-        // 1. Anchors
-        root.querySelectorAll("a").forEach((a) => {
+      searchScopes.forEach((scope) => {
+        // 1. Anchors (extract href only, never innerText)
+        scope.querySelectorAll("a").forEach((a) => {
           const rawHref = a.getAttribute("href") || a.href || "";
-          const rawText = (a.innerText || a.textContent || "").trim();
-          if (rawHref) rawCandidates.push(rawHref);
-          if (rawText) rawCandidates.push(rawText);
+          if (rawHref && !rawHref.startsWith("#") && !rawHref.startsWith("javascript:")) {
+            rawCandidates.push(rawHref);
+          }
         });
 
-        // 2. GitHub specific icons/buttons
-        root.querySelectorAll("a[href*='github.com'], .fa-github, [class*='github'], [title*='github' i]").forEach((el) => {
+        // 2. GitHub specific elements
+        scope.querySelectorAll("a[href*='github.com'], .fa-github, [class*='github'], [title*='github' i]").forEach((el) => {
           if (el.tagName === "A" && el.href) rawCandidates.push(el.href);
           const parentA = el.closest("a");
           if (parentA && parentA.href) rawCandidates.push(parentA.href);
@@ -767,42 +785,48 @@ ${compactCross}
           if (title.includes("github.com")) rawCandidates.push(title);
         });
 
-        // 3. Regex on text content
-        const text = root.innerText || root.textContent || "";
+        // 3. Regex on explicit http(s) URLs in text
+        const text = scope.innerText || scope.textContent || "";
         const regexMatches = text.match(/https?:\/\/[^\s"'<>]+/gi);
         if (regexMatches) {
           regexMatches.forEach((m) => rawCandidates.push(m));
         }
 
-        // 4. Tokens for naked domains
-        const tokens = text.split(/[\s\r\n\t,"'<>[\]{}()]+/);
-        tokens.forEach((token) => {
-          if (token && (token.includes(".") || token.includes("github"))) {
-            rawCandidates.push(token);
-          }
-        });
+        // 4. Naked domains matching recognized hosting services only
+        const nakedMatches = text.match(
+          /\b(?:[a-zA-Z0-9-]+\.)+(?:vercel\.app|netlify\.app|surge\.sh|web\.app|firebaseapp\.com|pages\.dev|onrender\.com|render\.com|railway\.app|deno\.dev|github\.io|github\.com\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\b(?:\/[^\s"'<>]*)?/gi
+        );
+        if (nakedMatches) {
+          nakedMatches.forEach((m) => rawCandidates.push(m));
+        }
       });
 
-      return rawCandidates;
+      return { rawCandidates, container: submissionData };
     };
 
     const processAndOpenLinks = () => {
-      // Actively ensure live menu is open so dropdown items are present in DOM
-      trackAndOpenLiveMenu();
+      const { rawCandidates, container } = extractCandidates();
+      if (!container && rawCandidates.length === 0) {
+        return false;
+      }
 
-      const rawCandidates = extractCandidates();
       const newUrlsToOpen = [];
 
       rawCandidates.forEach((candidate) => {
+        // Cap opened tabs to at most 3
+        if (openedUrls.size + newUrlsToOpen.length >= 3) return;
+
         const cleaned = cleanAndNormalizeUrl(candidate);
         if (cleaned) {
           try {
             const parsed = new URL(cleaned);
             const host = parsed.hostname.toLowerCase();
-            // Skip internal portal links
-            if (host.endsWith("programming-hero.com")) return;
-            // Hostname must be valid
+            // Skip internal portal links and localhost
+            if (host.endsWith("programming-hero.com") || host === "localhost") return;
+            // Hostname must contain dot and valid alphanumeric characters
             if (!host.includes(".") || host.startsWith("-") || host.includes("-http")) return;
+            // Reject purely numeric hosts (e.g. 60.00, 10.5)
+            if (/^[\d.]+$/.test(host)) return;
 
             const key = normalizeUrlKey(cleaned);
             if (!openedUrls.has(key)) {
@@ -849,19 +873,21 @@ ${compactCross}
         });
       }
 
-      // Return true only when BOTH GitHub and Live links have been opened
-      return hasOpenedGitHub && hasOpenedLive;
+      // Complete if both GitHub and Live are open, or if we hit the tab limit
+      return (hasOpenedGitHub && hasOpenedLive) || openedUrls.size >= 2;
     };
 
     // Try immediately
-    processAndOpenLinks();
+    const immediateComplete = processAndOpenLinks();
+    if (immediateComplete) return;
 
-    // Actively track and poll for 6 seconds (up to 50 attempts) so async GitHub icon & Live menu are caught
+    // Poll briefly (up to 15 attempts = 1.8s) for async elements to settle, then stop cleanly
     let attempts = 0;
     const trackerInterval = setInterval(() => {
       attempts++;
       const isComplete = processAndOpenLinks();
-      if (isComplete || attempts >= 50) {
+      // Stop if complete, or if at least one URL has been opened after 10 attempts, or max 15 attempts reached
+      if (isComplete || (openedUrls.size > 0 && attempts >= 10) || attempts >= 15) {
         clearInterval(trackerInterval);
       }
     }, 120);
