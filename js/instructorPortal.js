@@ -184,7 +184,7 @@ ${compactCross}
     {
       id: 1,
       key: "1",
-      icon: "fa-solid fa-globe",
+      iconSvg: ACHT_ICONS.globe,
       title: "Live Link কাজ করছে না",
       badge: "Broken Live",
       text:
@@ -195,7 +195,7 @@ ${compactCross}
     {
       id: 2,
       key: "2",
-      icon: "fa-brands fa-github",
+      iconSvg: ACHT_ICONS.github,
       title: "GitHub Repository Link কাজ করছে না",
       badge: "Broken Repo",
       text:
@@ -206,7 +206,7 @@ ${compactCross}
     {
       id: 3,
       key: "3",
-      icon: "fa-solid fa-forward-step",
+      iconSvg: ACHT_ICONS.skip,
       title: "Assignment Skip করা হয়েছে",
       badge: "Skipped",
       text:
@@ -217,7 +217,7 @@ ${compactCross}
     {
       id: 4,
       key: "4",
-      icon: "fa-solid fa-link-slash",
+      iconSvg: ACHT_ICONS.linkSlash,
       title: "Live URL বা GitHub Link পাওয়া যায়নি",
       badge: "Missing Links",
       text:
@@ -228,7 +228,7 @@ ${compactCross}
     {
       id: 5,
       key: "5",
-      icon: "fa-solid fa-triangle-exclamation",
+      iconSvg: ACHT_ICONS.warn,
       title: "ভুল Assignment Link জমা দেওয়া হয়েছে",
       badge: "Wrong Link",
       text:
@@ -239,7 +239,7 @@ ${compactCross}
     {
       id: 6,
       key: "6",
-      icon: "fa-solid fa-ban",
+      iconSvg: ACHT_ICONS.ban,
       title: "Assignment গ্রহণযোগ্য নয়",
       badge: "Unacceptable",
       text:
@@ -369,7 +369,7 @@ ${compactCross}
         <div class="acht-zero-key-badge">${item.key}</div>
         <div class="acht-zero-info">
           <div class="acht-zero-item-title">
-            <i class="${item.icon}" style="color: #fb7185;"></i>
+            <span style="display: inline-flex; align-items: center; justify-content: center; color: #fb7185;">${item.iconSvg || ""}</span>
             <span>${item.title}</span>
           </div>
           <div class="acht-zero-item-desc">${item.text}</div>
@@ -388,7 +388,7 @@ ${compactCross}
             </div>
           </div>
           <button type="button" class="acht-zero-close-btn" id="acht-zero-close" title="Close (Esc)">
-            <i class="fa-solid fa-xmark"></i>
+            ${ACHT_ICONS.cross}
           </button>
         </div>
         <div class="acht-zero-list">
@@ -1170,21 +1170,21 @@ ${compactCross}
     if (isCompact) {
       if (isActiveArrowKeys) {
         arrowKeyBtn.className = "tool-btn tool-btn-arrow-active";
-        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard"></i>';
+        arrowKeyBtn.innerHTML = ACHT_ICONS.keyboard;
         arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
       } else {
         arrowKeyBtn.className = "tool-btn tool-btn-arrow-inactive";
-        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard" style="opacity: 0.35;"></i>';
+        arrowKeyBtn.innerHTML = `<span style="opacity: 0.35;">${ACHT_ICONS.keyboard}</span>`;
         arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
       }
     } else {
       if (isActiveArrowKeys) {
         arrowKeyBtn.className = "tool-btn-util tool-btn-arrow-active";
-        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard"></i>';
+        arrowKeyBtn.innerHTML = ACHT_ICONS.keyboard;
         arrowKeyBtn.title = "Shortcuts Active (Click to pause)";
       } else {
         arrowKeyBtn.className = "tool-btn-util";
-        arrowKeyBtn.innerHTML = '<i class="fa-solid fa-keyboard" style="opacity: 0.35;"></i>';
+        arrowKeyBtn.innerHTML = `<span style="opacity: 0.35;">${ACHT_ICONS.keyboard}</span>`;
         arrowKeyBtn.title = "Shortcuts Paused (Click to activate)";
       }
     }

@@ -370,8 +370,11 @@
 
     const toast = document.createElement("div");
     toast.className = `acht-toast ${isWarning ? "acht-toast-warn" : ""}`;
+    const iconHtml = isWarning
+      ? (window.ACHT_ICONS?.warn || "⚠️")
+      : (window.ACHT_ICONS?.sparkles || "✨");
     toast.innerHTML = `
-      <span class="acht-toast-icon">${isWarning ? '<i class="fa-solid fa-triangle-exclamation"></i>' : '<i class="fa-solid fa-wand-magic-sparkles"></i>'}</span>
+      <span class="acht-toast-icon">${iconHtml}</span>
       <span class="acht-toast-message">${message}</span>
     `;
 
@@ -478,15 +481,15 @@
     // Update buttons in DOM
     const themeBtns = document.querySelectorAll("#themeToggle");
     themeBtns.forEach((btn) => {
-      const isCompact = btn.children.length === 1 && btn.querySelector("i");
+      const isCompact = btn.children.length === 1 && (btn.querySelector("svg") || btn.querySelector("i"));
+      const moonSvg = window.ACHT_ICONS?.moon || "🌙";
+      const sunSvg = window.ACHT_ICONS?.sun || "☀️";
       if (isCompact) {
-        btn.innerHTML = newTheme === "light"
-          ? '<i class="fa-solid fa-moon"></i>'
-          : '<i class="fa-solid fa-sun"></i>';
+        btn.innerHTML = newTheme === "light" ? moonSvg : sunSvg;
       } else {
         btn.innerHTML = newTheme === "light"
-          ? `<span><i class="fa-solid fa-moon" style="margin-right: 6px;"></i>Dark Mode</span><span class='tool-kbd'>Alt+T</span>`
-          : `<span><i class="fa-solid fa-sun" style="margin-right: 6px;"></i>Light Mode</span><span class='tool-kbd'>Alt+T</span>`;
+          ? `<span><span style="margin-right: 6px;">${moonSvg}</span>Dark Mode</span><span class='tool-kbd'>Alt+T</span>`
+          : `<span><span style="margin-right: 6px;">${sunSvg}</span>Light Mode</span><span class='tool-kbd'>Alt+T</span>`;
       }
     });
 

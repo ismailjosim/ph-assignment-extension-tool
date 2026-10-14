@@ -1,9 +1,20 @@
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css");
-
 /* ==========================================================================
    EVALUATOR PRO - Titanium / Obsidian HUD Floating Interface
    Modern developer tool aesthetics inspired by Linear, Raycast & Vercel
    ========================================================================== */
+
+/* Universal self-contained SVG icon layout */
+#toolsId svg,
+.tool-btn svg,
+.tool-btn-util svg,
+.tool-btn-icon-subtle svg,
+.acht-zero-item svg,
+.acht-toast-icon svg {
+  display: inline-block !important;
+  vertical-align: -0.125em !important;
+  flex-shrink: 0 !important;
+  fill: currentColor !important;
+}
 
 #toolsId {
   all: initial;

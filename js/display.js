@@ -1,13 +1,4 @@
 const displayButtons = (items, layoutMode) => {
-  // Ensure FontAwesome stylesheet is injected in head
-  if (!document.querySelector("link[data-acht-fa]")) {
-    const faLink = document.createElement("link");
-    faLink.rel = "stylesheet";
-    faLink.setAttribute("data-acht-fa", "true");
-    faLink.href = "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css";
-    document.head?.appendChild(faLink);
-  }
-
   let btnsContainer = document.getElementById("toolsId");
   if (!btnsContainer) {
     btnsContainer = document.createElement("div");
