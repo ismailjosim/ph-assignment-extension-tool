@@ -735,6 +735,9 @@
 
   // Global Keyboard Shortcut: Alt + F (AutoFill) and Alt + T (Theme Toggle)
   document.addEventListener("keydown", (e) => {
+    // Guarantee Ctrl+F or Meta shortcuts are never intercepted
+    if (e.ctrlKey || e.metaKey) return;
+
     if (e.altKey && (e.key === "f" || e.key === "F" || e.code === "KeyF")) {
       e.preventDefault();
       autoFillForms();

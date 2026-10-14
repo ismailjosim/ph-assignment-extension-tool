@@ -47,6 +47,18 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - **Visual Feedback & Toasts**: Shows sleek glowing border animations on filled fields and displays a clean floating toast notification with the field count.
 - **Trigger Anywhere**: Available via the **⚡ Auto Fill** button on the Live Site HUD toolbar, 1-click in the extension popup, or using the global **`Alt + F`** keyboard shortcut.
 
+### 🎯 Quick 0 Mark & Professional Feedback Picker
+- **Instant 0 Mark Flow**: Easily handle broken submissions or incomplete assignments with one click or keypress.
+- **6 Built-in Professional Bengali Feedback Templates**:
+  1. `1` - **Live Link কাজ করছে না** (Broken / unreachable live preview)
+  2. `2` - **GitHub Repository Link কাজ করছে না** (404 Not Found / Private repository)
+  3. `3` - **Assignment Skip করা হয়েছে** (Incomplete submission)
+  4. `4` - **Live URL বা GitHub Link পাওয়া যায়নি** (Missing links)
+  5. `5` - **ভুল Assignment Link জমা দেওয়া হয়েছে** (Incorrect project repository/live link)
+  6. `6` - **Assignment গ্রহণযোগ্য নয়** (Substandard / incomplete requirements)
+- **Automatic Score & Editor Injection**: Instantly fills **`0`** marks into the mark input box and writes the polished Bengali feedback directly into CKEditor, Quill, Summernote, contenteditable, or textarea editors.
+- **Keyboard-First Experience**: Press **`0`** to launch the picker, then press **`1`** through **`6`** to select the reason instantly (or **`Esc`** to cancel).
+
 ### 📹 Google Meet Auto-Admit
 - Includes a dedicated auto-admit feature to automatically admit waiting students into Google Meet support sessions every 3 seconds.
 
@@ -54,14 +66,19 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 
 ## ⌨️ Keyboard Shortcuts
 
+> [!NOTE]
+> Native browser shortcuts like **`Ctrl + F`** (Find on page), **`Ctrl + C`**, and **`Ctrl + V`** are completely untouched and free for normal browser use.
+
 | Shortcut | Page / Context | Action |
 | :--- | :--- | :--- |
 | `_` (or `Shift + -`) | Global | **Toggle Floating Toolbar** (Show / Hide) |
 | `Alt + F` | Any Page / Live Site | **⚡ Auto Fill Forms** (Fake Filler 1-click test data) |
-| `⚡` / `💤` (Toggle) | Instructor Portal | Toggle Keyboard Shortcuts Mode (Active / Paused) |
+| `Alt + T` | Any Page / Live Site | **🌓 Theme Switcher** (data-theme="light" / "dark") |
+| `Shift + M` | Instructor Portal | **Toggle Toolbar Layout** (Pro Card ↔ Compact Pill) |
 | `↑` (ArrowUp) | Instructor Portal | **Open Assignment** & launch GitHub + Live Site links in new tabs |
 | `A` | Modal | **Toggle "Select All"** main rubric requirements |
-| `F` or `←` (ArrowLeft) | Modal | **⚡ Feedback**: Click "Add to feedback editor", calculate & preserve marks, scroll to submit |
+| `Shift + F` or `←` | Modal | **⚡ Feedback**: Click "Add to feedback editor", calculate & preserve marks, scroll to submit |
+| `0` | Modal | **🎯 Quick 0 Feedback Picker**: Press `0` to open, then press `1`-`6` to auto-fill 0 marks & feedback |
 | `1` / `2` / `3` / `4` | Modal | **Quick Score Presets**: `1` = 60, `2` = 58, `3` = 55, `4` = 50 |
 | `Enter` or `→` (ArrowRight) | Modal | **Submit Assignment** (or `Ctrl+Enter` inside feedback editor) |
 | `J` / `PageDown` | Modal | **Scroll Down** directly to Feedback & Submit |
@@ -86,8 +103,9 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 6. Return to the portal tab:
    - Press **`A`** (or click **`✓ All`**) to select all main rubric criteria.
    - Adjust any specific criterion if not met (e.g. uncheck sorting).
-   - Press **`F`** or **`←`** (or click **`⚡ Feedback`**) to transfer feedback into the editor and preserve/auto-fill marks (retains calculated score such as 57, or caps at 50 if deadline missed).
+   - Press **`Shift + F`** or **`←`** (or click **`⚡ Feedback`**) to transfer feedback into the editor and preserve/auto-fill marks (retains calculated score such as 57, or caps at 50 if deadline missed).
    - Or click **`60`** / **`50`** (or press **`1`** / **`4`**) for instant score presets.
+   - **For 0 Marks & Feedback**: Press **`0`** (or click **`0`** on the dock), then select any of the 6 reasons with **`1`-`6`** (or mouse click). The mark is automatically set to 0 and the formatted feedback is injected.
    - Press **`Enter`** or **`→`** (or click **`Submit`**) to submit the score.
 7. Press **`↓`** (or click **`Close`**) to dismiss the modal and proceed to the next student!
 

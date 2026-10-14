@@ -185,13 +185,64 @@
     </form>
   </div>
 
+  <!-- Simulated Instructor Portal Assignment Evaluation Modal -->
+  <div class="form-box" style="border: 1px solid rgba(225, 29, 72, 0.35); background: #111827;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div>
+        <h2 style="color: #f43f5e; margin: 0; font-size: 18px;">🎯 Assignment Evaluation Simulator (Portal Form)</h2>
+        <p style="color: #94a3b8; margin: 4px 0 0; font-size: 13px;">
+          Test <strong>Quick 0 Feedback (Key: 0)</strong>, <strong>Feedback Transfer (Key: Shift+F)</strong>, and <strong>Ctrl+F Browser Search</strong>.
+        </p>
+      </div>
+      <button type="button" class="demo-btn" style="background: linear-gradient(135deg, #e11d48, #be123c);" onclick="if(window.openZeroFeedbackModal) window.openZeroFeedbackModal();">
+        Open 0 Feedback Modal
+      </button>
+    </div>
+
+    <div class="assignment-evaluation-form">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="Mark">Give Mark (out of 60)</label>
+          <input type="number" id="Mark" name="mark" placeholder="e.g. 60 or 0" style="font-weight: 700; font-size: 16px; color: #fb7185;">
+        </div>
+        <div class="form-group">
+          <label>Rubric Requirements</label>
+          <div style="display: flex; gap: 12px; margin-top: 6px;">
+            <label style="font-weight: normal; font-size: 12px;"><input type="checkbox" id="select-all" checked> Select All</label>
+            <label style="font-weight: normal; font-size: 12px;"><input type="checkbox" checked> Responsive</label>
+            <label style="font-weight: normal; font-size: 12px;"><input type="checkbox" checked> Clean Code</label>
+          </div>
+        </div>
+        <div class="form-group full">
+          <label for="feedback-editor">Instructor Feedback Editor (Rich Text / Contenteditable)</label>
+          <div id="feedback-editor" class="ck-editor__editable" contenteditable="true" style="min-height: 110px; padding: 12px; background: #080d1a; border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 8px; color: #f1f5f9; font-size: 13.5px; line-height: 1.6; outline: none;">
+            <p style="color: #64748b; margin: 0;">Feedback will automatically appear here when an option is selected from Quick 0 Feedback (1-6) or Shift+F...</p>
+          </div>
+        </div>
+      </div>
+      <div class="btn-group" style="justify-content: flex-end; margin-top: 14px;">
+        <button type="button" class="demo-btn" style="background: #059669;" onclick="alert('Assignment submitted with ' + (document.getElementById('Mark').value || '0') + ' marks!')">
+          Submit Assignment
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="empty-state" class="form-box" style="display: none; text-align: center; padding: 40px;">
     <h3 style="color: #fbbf24; margin-bottom: 8px;">⚠️ No Form Inputs Available on this Page</h3>
     <p style="color: #94a3b8; margin: 0;">This simulates a page without form inputs. Try clicking AutoFill or pressing Alt+F to test the disabled alert guard!</p>
   </div>
 
+  <script src="../js/buttons.js"></script>
+  <script src="../js/display.js"></script>
   <script src="../js/autoFiller.js"></script>
+  <script src="../js/instructorPortal.js"></script>
   <script>
+    // Initialize Instructor Portal toolbar in demo
+    if (typeof window.iPortal === "function") {
+      window.iPortal();
+    }
+
     let isShowingEmpty = false;
     function toggleEmptyInputsDemo() {
       isShowingEmpty = !isShowingEmpty;

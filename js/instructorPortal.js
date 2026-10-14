@@ -85,9 +85,10 @@ const iPortal = () => {
     ${jumpScroll}
   </div>
   ${focus}
-  <div class="tool-grid-2">
+  <div class="tool-grid-3">
     ${quick60}
     ${quick50}
+    ${quickZero}
   </div>
 </div>
 
@@ -123,6 +124,7 @@ ${compactJump}
 ${compactFocus}
 ${compact60}
 ${compact50}
+${compactZero}
 ${compactSubmit}
 ${compactAutoFill}
 ${compactAdd}
@@ -153,6 +155,7 @@ ${compactCross}
   const selectAllBtn = getElement(true, "selectAllRubric");
   const btn60 = getElement(true, "quick60");
   const btn50 = getElement(true, "quick50");
+  const btnZero = getElement(true, "quickZero");
   const jumpBtn = getElement(true, "jumpScroll");
 
   // Show a sleek non-intrusive floating toast notification
@@ -175,6 +178,265 @@ ${compactCross}
       }, 250);
     }, 2200);
   };
+
+  // Professional Bengali feedback templates for 0 mark evaluations
+  const ZERO_FEEDBACK_TEMPLATES = [
+    {
+      id: 1,
+      key: "1",
+      icon: "fa-solid fa-globe",
+      title: "Live Link কাজ করছে না",
+      badge: "Broken Live",
+      text:
+`আপনার জমা দেওয়া Live Link-টি যথাযথভাবে কাজ করছে না (Site unreachable/broken), যার কারণে আপাতত আপনার অ্যাসাইনমেন্টে ০ নম্বর প্রদান করা হলো। তবে দুশ্চিন্তার কোনো কারণ নেই। অনুগ্রহ করে Live Link-টি সঠিকভাবে ঠিক করে পুনরায় অ্যাসাইনমেন্ট জমা দিন এবং Recheck-এর জন্য রিকোয়েস্ট করুন।
+
+ফিডব্যাক বা লিংক সংক্রান্ত যেকোনো সহায়তার জন্য আমাদের লাইভ সাপোর্ট সেশনে যুক্ত হতে পারেন অথবা ফেসবুক হেল্প ডেস্কে পোস্ট করতে পারেন।`
+    },
+    {
+      id: 2,
+      key: "2",
+      icon: "fa-brands fa-github",
+      title: "GitHub Repository Link কাজ করছে না",
+      badge: "Broken Repo",
+      text:
+`আপনার জমা দেওয়া GitHub Repository Link-টিতে প্রবেশ করা যাচ্ছে না (404 Not Found বা রিপোজিটরি Private রাখা হয়েছে)। যার কারণে আপাতত আপনার অ্যাসাইনমেন্টে ০ নম্বর প্রদান করা হলো। অনুগ্রহ করে রিপোজিটরিটি Public করে অথবা সঠিক রিপোজিটরি লিংক আপডেট করে পুনরায় জমা দিন এবং Recheck-এর জন্য রিকোয়েস্ট করুন।
+
+ফিডব্যাক বুঝতে সমস্যা হলে লাইভ সাপোর্ট সেশনে অংশগ্রহণ করতে পারেন অথবা ফেসবুক হেল্প ডেস্কে পোস্ট করতে পারেন।`
+    },
+    {
+      id: 3,
+      key: "3",
+      icon: "fa-solid fa-forward-step",
+      title: "Assignment Skip করা হয়েছে",
+      badge: "Skipped",
+      text:
+`আপনি অ্যাসাইনমেন্টের প্রয়োজনীয় কাজ সম্পন্ন না করেই জমা দিয়েছেন বা এটি স্কিপ করেছেন। তাই আপাতত আপনার অ্যাসাইনমেন্টে ০ নম্বর প্রদান করা হলো। তবে হতাশ হবেন না! পরবর্তীতে নির্ধারিত গাইডলাইন অনুযায়ী কাজটি সম্পন্ন করে প্রয়োজনীয় লিংকগুলো জমা দিলে পুনরায় মূল্যায়নের মাধ্যমে নম্বর প্রাপ্তির সুযোগ থাকবে।
+
+যেকোনো বিষয়ে দিকনির্দেশনার জন্য লাইভ সাপোর্ট সেশনে যুক্ত হতে পারেন অথবা হেল্প ডেস্কে পোস্ট করতে পারেন।`
+    },
+    {
+      id: 4,
+      key: "4",
+      icon: "fa-solid fa-link-slash",
+      title: "Live URL বা GitHub Link পাওয়া যায়নি",
+      badge: "Missing Links",
+      text:
+`আপনার জমা দেওয়া অ্যাসাইনমেন্টে কোনো Live URL অথবা GitHub Repository Link পাওয়া যায়নি। প্রয়োজনীয় প্রজেক্ট লিংক অনুপস্থিত থাকায় আপাতত ০ নম্বর প্রদান করা হলো। অনুগ্রহ করে প্রয়োজনীয় সব লিংকগুলো সঠিকভাবে যুক্ত করে পুনরায় জমা দিন এবং Recheck-এর জন্য রিকোয়েস্ট করুন।
+
+ফিডব্যাক নিয়ে কোনো জিজ্ঞাসা থাকলে লাইভ সাপোর্ট সেশন অথবা হেল্প ডেস্কে যোগাযোগ করার অনুরোধ রইল।`
+    },
+    {
+      id: 5,
+      key: "5",
+      icon: "fa-solid fa-triangle-exclamation",
+      title: "ভুল Assignment Link জমা দেওয়া হয়েছে",
+      badge: "Wrong Link",
+      text:
+`আপনি এই অ্যাসাইনমেন্টের পরিবর্তে অন্য কোনো প্রজেক্ট বা ভুল লিংক জমা দিয়েছেন। তাই আপাতত আপনার অ্যাসাইনমেন্টে ০ নম্বর প্রদান করা হলো। অনুগ্রহ করে বর্তমান অ্যাসাইনমেন্টের সঠিক GitHub এবং Live Link-টি প্রদান করে পুনরায় জমা দিন এবং Recheck-এর জন্য রিকোয়েস্ট করুন।
+
+প্রয়োজনে সাপোর্ট সেশনে এসে সঠিক লিংক যাচাই করে নিতে পারেন।`
+    },
+    {
+      id: 6,
+      key: "6",
+      icon: "fa-solid fa-ban",
+      title: "Assignment গ্রহণযোগ্য নয়",
+      badge: "Unacceptable",
+      text:
+`আপনার জমা দেওয়া অ্যাসাইনমেন্টটি পর্যালোচনার পর দেখা গেছে যে এটি নির্ধারিত মানদণ্ড ও রুব্রিক্স অনুযায়ী গ্রহণযোগ্য হয়নি (যেমন: অপর্যাপ্ত কাজ, রিকোয়ারমেন্ট অপূর্ণ বা অসংগতিপূর্ণ)। অনুগ্রহ করে অ্যাসাইনমেন্টের রিকোয়ারমেন্টগুলো পুনরায় ভালো করে দেখে প্রয়োজনীয় পরিবর্তন সম্পন্ন করে পুনরায় জমা দিন এবং Recheck-এর জন্য রিকোয়েস্ট করুন।
+
+যেকোনো সমস্যায় সাপোর্ট সেশনের সাহায্য নেওয়ার অনুরোধ রইল।`
+    }
+  ];
+
+  // Helper to check if Zero Feedback Modal is open
+  const isZeroModalOpen = () => {
+    const el = document.getElementById("acht-zero-modal-overlay");
+    return el && el.style.display !== "none";
+  };
+
+  // Close Zero Feedback Modal
+  const closeZeroFeedbackModal = () => {
+    const el = document.getElementById("acht-zero-modal-overlay");
+    if (el) {
+      el.remove();
+    }
+  };
+
+  // Helper to insert feedback text into rich editors (CKEditor, Quill, Summernote) or textareas
+  const insertFeedbackIntoEditor = (text) => {
+    const candidateEditors = [
+      document.querySelector(".ck-editor__editable"),
+      document.querySelector(".note-editable"),
+      document.querySelector(".ql-editor"),
+      document.querySelector(".assignment-evaluation-form [contenteditable='true']"),
+      document.querySelector(".modal [contenteditable='true']"),
+      ...document.querySelectorAll("[contenteditable='true']:not(#toolsId *)"),
+      document.querySelector("textarea[name*='feedback' i]"),
+      document.querySelector("textarea#feedback"),
+      document.querySelector(".assignment-evaluation-form textarea"),
+      document.querySelector(".modal textarea"),
+      ...document.querySelectorAll("textarea:not(#toolsId *)")
+    ].filter(Boolean);
+
+    const editor = candidateEditors[0];
+    if (!editor) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text);
+      }
+      return false;
+    }
+
+    if (editor.isContentEditable || editor.getAttribute("contenteditable") === "true") {
+      editor.focus();
+      const formattedHtml = text
+        .split("\n\n")
+        .map((para) => `<p>${para.replace(/\n/g, "<br>")}</p>`)
+        .join("");
+
+      let inserted = false;
+      try {
+        inserted = document.execCommand("insertHTML", false, formattedHtml);
+      } catch (err) {
+        inserted = false;
+      }
+
+      if (!inserted) {
+        editor.innerHTML = formattedHtml;
+      }
+
+      if (editor.ckeditorInstance && typeof editor.ckeditorInstance.setData === "function") {
+        editor.ckeditorInstance.setData(formattedHtml);
+      }
+
+      editor.dispatchEvent(new Event("input", { bubbles: true }));
+      editor.dispatchEvent(new Event("change", { bubbles: true }));
+    } else if (editor.tagName === "TEXTAREA" || editor.tagName === "INPUT") {
+      editor.focus();
+      const valueSetter = Object.getOwnPropertyDescriptor(editor, "value")?.set;
+      const prototype = Object.getPrototypeOf(editor);
+      const prototypeValueSetter = Object.getOwnPropertyDescriptor(prototype, "value")?.set;
+
+      if (prototypeValueSetter && valueSetter !== prototypeValueSetter) {
+        prototypeValueSetter.call(editor, text);
+      } else if (valueSetter) {
+        valueSetter.call(editor, text);
+      } else {
+        editor.value = text;
+      }
+
+      editor.dispatchEvent(new Event("input", { bubbles: true }));
+      editor.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+
+    return true;
+  };
+
+  // Apply selected zero feedback template and set mark to 0
+  const applyZeroFeedback = (template) => {
+    if (!template) return;
+    closeZeroFeedbackModal();
+
+    // 1. Fill 0 marks
+    fillMark(0);
+
+    // 2. Insert formatted professional Bengali feedback text into editor
+    const inserted = insertFeedbackIntoEditor(template.text);
+
+    // 3. Smooth scroll down to feedback / submit
+    scrollToSection("down");
+
+    // 4. Show success toast notification
+    if (inserted) {
+      showToast(`0 Mark & Feedback set: "${template.title}"`, "🎯");
+    } else {
+      showToast(`0 Mark set! Feedback copied to clipboard.`, "📋");
+    }
+  };
+
+  // Open Quick 0 Feedback Picker Modal
+  const openZeroFeedbackModal = () => {
+    if (isZeroModalOpen()) {
+      closeZeroFeedbackModal();
+      return;
+    }
+
+    const overlay = document.createElement("div");
+    overlay.id = "acht-zero-modal-overlay";
+
+    const itemsHtml = ZERO_FEEDBACK_TEMPLATES.map((item) => `
+      <div class="acht-zero-item" data-id="${item.id}" tabindex="0" role="button">
+        <div class="acht-zero-key-badge">${item.key}</div>
+        <div class="acht-zero-info">
+          <div class="acht-zero-item-title">
+            <i class="${item.icon}" style="color: #fb7185;"></i>
+            <span>${item.title}</span>
+          </div>
+          <div class="acht-zero-item-desc">${item.text}</div>
+        </div>
+      </div>
+    `).join("");
+
+    overlay.innerHTML = `
+      <div id="acht-zero-modal-card" role="dialog" aria-modal="true" aria-label="Quick 0 Feedback">
+        <div class="acht-zero-header">
+          <div class="acht-zero-title-wrap">
+            <div class="acht-zero-icon-badge">0</div>
+            <div>
+              <div class="acht-zero-title-text">Quick 0 Mark & Feedback</div>
+              <div class="acht-zero-subtext">Select a reason to set 0 mark and insert professional feedback</div>
+            </div>
+          </div>
+          <button type="button" class="acht-zero-close-btn" id="acht-zero-close" title="Close (Esc)">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="acht-zero-list">
+          ${itemsHtml}
+        </div>
+        <div class="acht-zero-footer">
+          <span><kbd>1</kbd> - <kbd>6</kbd> Select Reason</span>
+          <span><kbd>Esc</kbd> Cancel</span>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Close button click
+    const closeBtn = overlay.querySelector("#acht-zero-close");
+    if (closeBtn) {
+      closeBtn.onclick = (e) => {
+        e.stopPropagation();
+        closeZeroFeedbackModal();
+      };
+    }
+
+    // Backdrop click
+    overlay.onclick = (e) => {
+      if (e.target === overlay) {
+        closeZeroFeedbackModal();
+      }
+    };
+
+    // Item clicks
+    const items = overlay.querySelectorAll(".acht-zero-item");
+    items.forEach((item) => {
+      item.onclick = (e) => {
+        e.stopPropagation();
+        const id = parseInt(item.getAttribute("data-id"), 10);
+        const template = ZERO_FEEDBACK_TEMPLATES.find((t) => t.id === id);
+        if (template) {
+          applyZeroFeedback(template);
+        }
+      };
+    });
+  };
+
+  // Expose helpers globally
+  window.openZeroFeedbackModal = openZeroFeedbackModal;
+  window.closeZeroFeedbackModal = closeZeroFeedbackModal;
+  window.applyZeroFeedback = applyZeroFeedback;
 
   // Find the 'Add to feedback editor' button
   const findFeedbackBtn = () => {
@@ -1096,6 +1358,13 @@ ${compactCross}
     });
   }
 
+  // quick score 0 (picker)
+  if (btnZero) {
+    btnZero.addEventListener("click", () => {
+      openZeroFeedbackModal();
+    });
+  }
+
   // jump scroll down
   if (jumpBtn) {
     jumpBtn.addEventListener("click", () => {
@@ -1138,6 +1407,28 @@ ${compactCross}
         return;
       }
 
+      // CRITICAL: NEVER block Ctrl+F, Ctrl+C, Ctrl+V, Ctrl+A, Ctrl+Z, etc.
+      // If Ctrl or Meta (Command on Mac) is pressed, let browser handle everything natively
+      if (e.ctrlKey || e.metaKey) return;
+
+      // Handle Quick 0 Feedback modal navigation when open
+      if (isZeroModalOpen()) {
+        if (e.key === "Escape") {
+          e.preventDefault();
+          closeZeroFeedbackModal();
+          return;
+        }
+        const num = parseInt(e.key, 10);
+        if (!isNaN(num) && num >= 1 && num <= 6) {
+          e.preventDefault();
+          const template = ZERO_FEEDBACK_TEMPLATES.find((t) => t.id === num);
+          if (template) {
+            applyZeroFeedback(template);
+          }
+          return;
+        }
+      }
+
       // Do not interfere with regular typing inside text boxes
       if (isTyping) return;
 
@@ -1153,10 +1444,22 @@ ${compactCross}
           break;
 
         case "ArrowLeft":
-        case "f":
-        case "F":
           e.preventDefault();
           smartFeedbackAndScore();
+          break;
+
+        case "f":
+        case "F":
+          // Only trigger with Shift+F (⇧F) to prevent interfering with standalone typing or shortcuts
+          if (e.shiftKey) {
+            e.preventDefault();
+            smartFeedbackAndScore();
+          }
+          break;
+
+        case "0":
+          e.preventDefault();
+          openZeroFeedbackModal();
           break;
 
         case "ArrowRight":

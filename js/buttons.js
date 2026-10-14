@@ -21,13 +21,15 @@ const view = `<button type='button' class='${baseClass} tool-btn-view' id='handl
 //----------buttons for instructor portal---------
 const submitMark = `<button id='submitMark' type='button' class='${baseClass} tool-btn-submit' title='Submit assignment (Key: Enter or →)'><span>Submit</span><span class='tool-kbd'>↵</span></button>`;
 
-const focus = `<button id='focus' type='button' class='${baseClass} tool-btn-focus' title='Transfer feedback & auto-fill marks (Key: F or ←)'><span><i class="fa-solid fa-bolt" style="margin-right: 5px;"></i>Feedback</span><span class='tool-kbd'>F</span></button>`;
+const focus = `<button id='focus' type='button' class='${baseClass} tool-btn-focus' title='Transfer feedback & auto-fill marks (Key: Shift+F or ←)'><span><i class="fa-solid fa-bolt" style="margin-right: 5px;"></i>Feedback</span><span class='tool-kbd'>⇧F</span></button>`;
 
 const selectAllMain = `<button id='selectAllRubric' type='button' class='${baseClass} tool-btn-select-all' title='Toggle Select All Main Requirements (Key: A)'><span><i class="fa-solid fa-check-double" style="margin-right: 4px;"></i>All</span><span class='tool-kbd'>A</span></button>`;
 
 const quick60 = `<button id='quick60' type='button' class='${baseClass} tool-btn-score-60' title='Fill 60 Marks (Key: 1)'><span>60</span><span class='tool-kbd'>1</span></button>`;
 
 const quick50 = `<button id='quick50' type='button' class='${baseClass} tool-btn-score-50' title='Fill 50 Marks (Key: 4)'><span>50</span><span class='tool-kbd'>4</span></button>`;
+
+const quickZero = `<button id='quickZero' type='button' class='${baseClass} tool-btn-score-0' title='Quick 0 Mark & Feedback Picker (Key: 0)'><span>0</span><span class='tool-kbd'>0</span></button>`;
 
 const jumpScroll = `<button id='jumpScroll' type='button' class='${baseClass} tool-btn-nav' title='Scroll to Feedback & Submit (Key: J)'><span><i class="fa-solid fa-arrow-down" style="margin-right: 5px;"></i>Down</span><span class='tool-kbd'>J</span></button>`;
 
@@ -66,9 +68,10 @@ const compactOpen = `<button id='openModal' type='button' class='${baseClass} to
 const compactBracket = `<button id='pressE' type='button' class='${baseClass} tool-btn-bracket' title='Press ] key dynamically (Key: ])'>]</button>`;
 const compactSelectAll = `<button id='selectAllRubric' type='button' class='${baseClass} tool-btn-select-all' title='Toggle Select All Main Requirements (Key: A)'>All</button>`;
 const compactJump = `<button id='jumpScroll' type='button' class='${baseClass} tool-btn-nav' title='Scroll to Feedback & Submit (Key: J)'>Down</button>`;
-const compactFocus = `<button id='focus' type='button' class='${baseClass} tool-btn-focus' title='Transfer feedback & auto-fill marks (Key: F or ←)'>Focus</button>`;
+const compactFocus = `<button id='focus' type='button' class='${baseClass} tool-btn-focus' title='Transfer feedback & auto-fill marks (Key: Shift+F or ←)'>Focus</button>`;
 const compact60 = `<button id='quick60' type='button' class='${baseClass} tool-btn-score-60' title='Fill 60 Marks (Key: 1)'>60</button>`;
 const compact50 = `<button id='quick50' type='button' class='${baseClass} tool-btn-score-50' title='Fill 50 Marks (Key: 4)'>50</button>`;
+const compactZero = `<button id='quickZero' type='button' class='${baseClass} tool-btn-score-0' title='Quick 0 Mark & Feedback Picker (Key: 0)'>0</button>`;
 const compactSubmit = `<button id='submitMark' type='button' class='${baseClass} tool-btn-submit' title='Submit assignment (Key: Enter or →)'>Submit</button>`;
 const compactAdd = `<button id='addAssignment' type='button' class='${baseClass} tool-btn-add' title='Add 10 assignments'>Add</button>`;
 const compactUnassign = `<button id='unassign' type='button' class='${baseClass} tool-btn-unas' title='Unassign single assignment'>UnAs</button>`;
