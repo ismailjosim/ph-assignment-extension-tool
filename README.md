@@ -10,19 +10,23 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 ## 🚀 Key Features
 
 ### 🎨 Modern Glassmorphic HUD Toolbar
+
 - **Dock Interface**: Floating dock with dark glassmorphism (`backdrop-filter: blur`), smooth 18px rounded corners, drag handle, and subtle glowing borders.
 - **Adaptive Button Layout**: Buttons automatically stretch to 100% width matching information cards with zero awkward spacing.
 - **Vibrant Gradient Aesthetic**: Clean, color-coded gradient pills with responsive click/hover micro-animations (`scale(0.96)` and brightness elevation).
 
 ### ⚡ Batch Assignment ("Add" Button)
+
 - Automatically selects 10 pending assignments from the instructor table.
 - Targets the updated portal button (`.assignment-list-table__toolbar-button`) and confirms the SweetAlert dialog in a single click.
 
 ### 🔗 Automated Multi-Tab Link Opening & URL Auto-Repair
+
 - Clicking **Open** or pressing **`↑` (ArrowUp)** opens the assignment modal **and** automatically extracts every unique student-submitted repository or live-site link from `.assignment-evaluation-form__submission-data`, launching each into a separate new tab.
 - **Smart Protocol Auto-Repair**: If a student submits a naked domain without `https://` (e.g. `assignment-6-six-gamma.vercel.app` or `github.com/user/repo`), the extension automatically repairs and prepends `https://`, strips accidental portal relative paths (`web.programming-hero.com/...`), and opens the destination correctly!
 
 ### 🕒 GitHub Commit Analyzer & Smart Deadline Comparator
+
 - **Real-Time Commit Extraction**: Accurately extracts the commit count from GitHub's modern React DOM.
 - **Cross-Tab Deadline Synchronization**: Automatically captures deadline data (`First deadline · 60 marks`, `Second deadline`, `Submitted at`) from the portal modal and syncs it to the GitHub tab.
 - **Intelligent Status Indicators**:
@@ -32,14 +36,17 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - **One-Click Clipboard Audit**: Click the commit info card to copy the full audit log (last push date, commit count, deadlines, and status) directly to your clipboard.
 
 ### 🛡️ Cross-Tab State Persistence
+
 - Closing the toolbar with **`✕`** sets a global state (`toolsEnabled: false`) via `chrome.storage.local`.
 - When navigating across tabs or opening new repositories on GitHub, the toolbar **remains closed** until explicitly toggled on with **`_`**.
 
 ### 🌐 Live Project Navigation HUD
+
 - Dedicated **LIVE SITE** floating HUD toolbar for all student live project links (e.g., Vercel, Netlify, Surge, GitHub Pages).
 - Instant **Scroll Top** (`↑`), **Scroll Bottom** (`↓`), and **Close Tab** (`←`) controls for swift preview and review.
 
 ### ⚡ Fake Filler (1-Click Form Auto Filler)
+
 - **Instant Dummy Data Injection**: Fills forms with 1-click on any page or student live site, just like the popular Fake Filler tool.
 - **Smart Context Recognition**: Automatically generates realistic full names, usernames, emails, secure passwords (matching confirm passwords), phone numbers, addresses, cities, countries, dates, times, numbers, and descriptive paragraphs.
 - **Full Form Support**: Automatically populates inputs, textareas, selects, radio groups, checkboxes (e.g. terms & agreements), and contenteditable elements.
@@ -48,6 +55,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - **Trigger Anywhere**: Available via the **⚡ Auto Fill** button on the Live Site HUD toolbar, 1-click in the extension popup, or using the global **`Alt + F`** keyboard shortcut.
 
 ### 🎯 Quick 0 Mark & Professional Feedback Picker
+
 - **Instant 0 Mark Flow**: Easily handle broken submissions or incomplete assignments with one click or keypress.
 - **6 Built-in Professional Bengali Feedback Templates**:
   1. `1` - **Live Link কাজ করছে না** (Broken / unreachable live preview)
@@ -61,6 +69,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - **Split Repository Feedback**: When the current assignment requires both frontend/client and backend/server work but only one or no GitHub repository was submitted, the standard **Feedback** action appends a reminder to submit the missing repository.
 
 ### 📹 Google Meet Auto-Admit
+
 - Includes a dedicated auto-admit feature to automatically admit waiting students into Google Meet support sessions every 3 seconds.
 
 ---
@@ -94,6 +103,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 ## 📖 How to Use
 
 ### 1. Instructor Portal Workflow
+
 1. Navigate to the **Pending Assignments** table.
 2. Click **`Add`** to automatically select 10 assignments and assign them to yourself.
 3. Switch to your assigned tab, then click **`Open`** (or press **`↑`**):
@@ -111,6 +121,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 7. Press **`↓`** (or click **`Close`**) to dismiss the modal and proceed to the next student!
 
 ### 2. GitHub Verification Workflow
+
 1. When opening a repository, the extension automatically inspects the commit history and cross-checks the deadline.
 2. Check the color-coded status card:
    - **Green**: Good to go for full marks.
@@ -119,6 +130,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 4. Click **`Close Tab`** (or press **`←`**) when done.
 
 ### 3. Google Meet Workflow
+
 1. Join your Google Meet support room.
 2. Click **`🟢`** to enable Auto-Admit (turns to **`🚫`**).
 3. The extension scans every 3 seconds to admit waiting students automatically.
@@ -128,14 +140,18 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 ## 📦 Installation
 
 1. Clone or download this repository:
+
    ```bash
    git clone https://github.com/faarhaan10/ph-asnmnt-ex-tools.git
    ```
+
 2. Open Google Chrome (or any Chromium browser: Brave, Edge, Opera).
 3. Navigate to:
+
    ```
    chrome://extensions
    ```
+
 4. Enable **Developer mode** toggle in the top-right corner.
 5. Click **Load unpacked** and select the extension directory.
 6. The extension is installed and ready! Press **`_`** on any supported page to toggle the toolbar.
@@ -145,6 +161,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 ## 💡 Best Practices
 
 > [!TIP]
+>
 > - This extension accelerates repetitive actions (opening tabs, batch assigning, copying marks, checking timestamps), but **always verify student code and criteria** before submitting final scores.
 > - Take your time and keep feedback constructive! Don't rush 😎
 
