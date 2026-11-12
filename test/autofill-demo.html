@@ -150,6 +150,10 @@
           <label for="file-upload">Upload Picture File (accept="image/*")</label>
           <input type="file" id="file-upload" name="profilePic" accept="image/*">
         </div>
+        <div class="form-group">
+          <label for="document-upload">Upload Document (accept="application/pdf")</label>
+          <input type="file" id="document-upload" name="document" accept="application/pdf">
+        </div>
 
         <div class="form-group">
           <label for="password">Password</label>
@@ -172,6 +176,15 @@
         <div class="form-group">
           <label for="birth-date">Date of Birth</label>
           <input type="date" id="birth-date" name="dob">
+        </div>
+        <div class="form-group">
+          <label for="birth-week">Preferred Week</label>
+          <input type="week" id="birth-week" name="week">
+        </div>
+        <div class="form-group">
+          <label>Contact Preference</label>
+          <label><input type="radio" name="contactPreference" value="email"> Email</label>
+          <label><input type="radio" name="contactPreference" value="phone"> Phone</label>
         </div>
         <div class="form-group full">
           <label for="user-bio">Bio / About Me</label>

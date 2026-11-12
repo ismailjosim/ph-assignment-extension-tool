@@ -43,13 +43,15 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 ### 🌐 Live Project Navigation HUD
 
 - Dedicated **LIVE SITE** floating HUD toolbar for all student live project links (e.g., Vercel, Netlify, Surge, GitHub Pages).
+- The live-site toolbar stays hidden on Google sign-in and account-consent pages opened by project login flows.
 - Instant **Scroll Top** (`↑`), **Scroll Bottom** (`↓`), and **Close Tab** (`←`) controls for swift preview and review.
 
 ### ⚡ Fake Filler (1-Click Form Auto Filler)
 
 - **Instant Dummy Data Injection**: Fills forms with 1-click on any page or student live site, just like the popular Fake Filler tool.
 - **Smart Context Recognition**: Automatically generates realistic full names, usernames, emails, secure passwords (matching confirm passwords), phone numbers, addresses, cities, countries, dates, times, numbers, and descriptive paragraphs.
-- **Full Form Support**: Automatically populates inputs, textareas, selects, radio groups, checkboxes (e.g. terms & agreements), and contenteditable elements.
+- **Full Form Support**: Automatically populates supported inputs (including image/document uploads and week fields), textareas, selects, radio groups, checkboxes (e.g. terms & agreements), and contenteditable elements.
+- **Stable Image Values**: Existing image URLs are preserved; generated URLs stay consistent per field, and upload files are assigned synchronously before the action completes.
 - **Framework & React Compatibility**: Uses native prototype property setters and dispatches `focus`, `input`, `change`, and `blur` events so React controlled inputs, Formik, React Hook Form, Vue `v-model`, and Angular forms update their internal state seamlessly without validation errors.
 - **Visual Feedback & Toasts**: Shows sleek glowing border animations on filled fields and displays a clean floating toast notification with the field count.
 - **Trigger Anywhere**: Available via the **⚡ Auto Fill** button on the Live Site HUD toolbar, 1-click in the extension popup, or using the global **`Alt + F`** keyboard shortcut.

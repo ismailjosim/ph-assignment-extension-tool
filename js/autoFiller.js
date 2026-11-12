@@ -55,6 +55,9 @@
     domains: ["gmail.com", "example.com", "testmail.org", "devmail.io"]
   };
 
+  const IMAGE_FIELD_PATTERN =
+    /(image|photo|avatar|picture|thumbnail|banner|poster|icon|screenshot|img_url|image_url|photourl|profile_pic|cover_photo|product_img)/i;
+
   // High-Resolution Real Images (Unsplash, Google & Curated Real Assets)
   const REAL_IMAGES = {
     products: [
@@ -105,6 +108,13 @@
 
   const getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
   const getRandomNumber = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const getStableItem = (items, key) => {
+    let hash = 0;
+    for (let index = 0; index < key.length; index++) {
+      hash = (hash * 31 + key.charCodeAt(index)) | 0;
+    }
+    return items[Math.abs(hash) % items.length];
+  };
 
   /**
    * Dispatches React / Vue friendly value change to controlled components
@@ -136,17 +146,20 @@
    * Sets checked state for checkboxes and radios with React synthetic events support
    */
   const setNativeChecked = (element, checked) => {
-    const proto = typeof window.HTMLInputElement !== "undefined" ? window.HTMLInputElement.prototype : null;
-    const descriptor = proto ? Object.getOwnPropertyDescriptor(proto, "checked") : null;
-    if (descriptor && descriptor.set) {
-      descriptor.set.call(element, checked);
-    } else {
-      element.checked = checked;
-    }
+    if (element.checked === checked) return;
+    element.click();
 
-    element.dispatchEvent(new Event("click", { bubbles: true, cancelable: true }));
-    element.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
-    element.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
+    if (element.checked !== checked) {
+      const proto = typeof window.HTMLInputElement !== "undefined" ? window.HTMLInputElement.prototype : null;
+      const descriptor = proto ? Object.getOwnPropertyDescriptor(proto, "checked") : null;
+      if (descriptor && descriptor.set) {
+        descriptor.set.call(element, checked);
+      } else {
+        element.checked = checked;
+      }
+      element.dispatchEvent(new Event("input", { bubbles: true, cancelable: true }));
+      element.dispatchEvent(new Event("change", { bubbles: true, cancelable: true }));
+    }
   };
 
   /**
@@ -178,6 +191,21 @@
       parts.push(parentLabel.textContent || "");
     }
 
+    return parts.join(" ").toLowerCase();
+  };
+
+  const getStableFieldKey = (element) => {
+    const parts = [
+      element.name || "",
+      element.id || "",
+      element.placeholder || "",
+      element.getAttribute("aria-label") || "",
+      element.getAttribute("autocomplete") || "",
+      element.getAttribute("title") || ""
+    ];
+    if (element.labels) {
+      parts.push(...Array.from(element.labels, (label) => label.textContent || ""));
+    }
     return parts.join(" ").toLowerCase();
   };
 
@@ -246,25 +274,24 @@
     }
 
     // 7. Image / Photo fields (type="url" or text or image with image/photo descriptor)
-    if (
-      /(image|photo|avatar|picture|thumbnail|banner|poster|icon|screenshot|img_url|image_url|photourl|profile_pic|cover_photo|product_img)/i.test(desc)
-    ) {
+    if (IMAGE_FIELD_PATTERN.test(desc)) {
       const customImg = getCustomImageUrl();
       if (customImg && customImg.trim()) return customImg.trim();
+      const imageKey = getStableFieldKey(input) || desc.replace(/\bacht-autofill-highlight\b/g, "");
 
       if (/(avatar|profile|user|author|member|person|face|student)/i.test(desc)) {
-        return getRandomItem(REAL_IMAGES.avatars);
+        return getStableItem(REAL_IMAGES.avatars, imageKey);
       }
       if (/(banner|cover|hero|landscape|travel|hotel|room|view|tour|nature)/i.test(desc)) {
-        return getRandomItem(REAL_IMAGES.banners);
+        return getStableItem(REAL_IMAGES.banners, imageKey);
       }
       if (/(food|recipe|dish|meal|restaurant|cafe|drink|coffee)/i.test(desc)) {
-        return getRandomItem(REAL_IMAGES.food);
+        return getStableItem(REAL_IMAGES.food, imageKey);
       }
       if (/(tech|code|developer|project|portfolio|laptop|programming)/i.test(desc)) {
-        return getRandomItem(REAL_IMAGES.tech);
+        return getStableItem(REAL_IMAGES.tech, imageKey);
       }
-      return getRandomItem(REAL_IMAGES.products);
+      return getStableItem(REAL_IMAGES.products, imageKey);
     }
 
     // 8. URLs (Non-image)
@@ -312,7 +339,17 @@
       return `${yyyy}-${mm}-${dd}T14:30`;
     }
     if (type === "month") {
-      return "2025-06";
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+    }
+    if (type === "week") {
+      const today = new Date();
+      const utcDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+      const dayFromMonday = (utcDate.getUTCDay() + 6) % 7;
+      utcDate.setUTCDate(utcDate.getUTCDate() - dayFromMonday + 3);
+      const firstThursday = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 4));
+      const week = 1 + Math.round((utcDate - firstThursday) / 604800000);
+      return `${utcDate.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
     }
 
     // 10. Color
@@ -355,6 +392,77 @@
     setTimeout(() => {
       if (el && el.classList) el.classList.remove("acht-autofill-highlight");
     }, 1500);
+  };
+
+  const createGeneratedFile = (fileInput, desc) => {
+    const acceptedTypes = (fileInput.getAttribute("accept") || "")
+      .toLowerCase()
+      .split(",")
+      .map((type) => type.trim())
+      .filter(Boolean);
+    const imageExtensions = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".bmp"];
+    const imageType = acceptedTypes.find((type) => type.startsWith("image/"));
+    const imageExtension = acceptedTypes.find((type) => imageExtensions.includes(type));
+    const isImage = Boolean(imageType || imageExtension || (
+      acceptedTypes.length === 0 && /(photo|avatar|image|pic|img)/i.test(desc)
+    ));
+
+    if (isImage) {
+      const imageMime = imageType === "image/jpeg" || imageExtension === ".jpg" || imageExtension === ".jpeg"
+        ? "image/jpeg"
+        : "image/png";
+      const extension = imageMime === "image/jpeg" ? "jpg" : "png";
+      const canvas = document.createElement("canvas");
+      canvas.width = 200;
+      canvas.height = 200;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("Could not create image canvas context");
+
+      const gradient = context.createLinearGradient(0, 0, 200, 200);
+      gradient.addColorStop(0, "#4f46e5");
+      gradient.addColorStop(1, "#06b6d4");
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, 200, 200);
+      context.fillStyle = "#ffffff";
+      context.font = "bold 20px sans-serif";
+      context.textAlign = "center";
+      context.fillText("ACHT Photo", 100, 105);
+
+      const base64 = canvas.toDataURL(imageMime).split(",")[1];
+      const binary = atob(base64);
+      const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
+      return new File([bytes], `acht-test-image.${extension}`, { type: imageMime });
+    }
+
+    const mimeExtensions = {
+      "application/json": "json",
+      "application/pdf": "pdf",
+      "application/zip": "zip",
+      "application/msword": "doc",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
+      "application/vnd.ms-excel": "xls",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
+      "text/csv": "csv",
+      "text/html": "html",
+      "text/plain": "txt"
+    };
+    const extensionMimeTypes = Object.fromEntries(
+      Object.entries(mimeExtensions).map(([mime, extension]) => [`.${extension}`, mime])
+    );
+    const acceptedMime = acceptedTypes.find((type) => type.includes("/") && !type.endsWith("/*"));
+    const acceptedExtension = acceptedTypes.find((type) => type.startsWith("."));
+    const mimeType = acceptedMime || extensionMimeTypes[acceptedExtension] || "text/plain";
+    const extension = acceptedExtension
+      ? acceptedExtension.slice(1)
+      : mimeExtensions[mimeType] || "txt";
+    const content = mimeType === "application/json"
+      ? JSON.stringify({ message: "ACHT test file" }, null, 2)
+      : mimeType === "text/csv"
+        ? "name,value\nACHT,test"
+        : mimeType === "application/pdf"
+          ? "%PDF-1.4\n% ACHT test file\n%%EOF"
+          : "ACHT generated test file";
+    return new File([content], `acht-test-file.${extension}`, { type: mimeType });
   };
 
   /**
@@ -407,6 +515,7 @@
     if (type === "hidden" || type === "button" || type === "submit" || type === "reset" || type === "image") {
       return false;
     }
+    if (type === "file") return true;
 
     // Check visibility (unless it's an styled radio/checkbox inside a label)
     const style = window.getComputedStyle(el);
@@ -415,7 +524,7 @@
     }
 
     // Some custom checkboxes have opacity:0 or size 0 inside labels, which is acceptable
-    if (type !== "checkbox" && type !== "radio" && el.offsetParent === null) {
+    if (type !== "checkbox" && type !== "radio" && el.getClientRects().length === 0) {
       return false;
     }
 
@@ -428,7 +537,7 @@
   const getFillableInputsCount = (scopeElement = document) => {
     let count = 0;
     const candidates = scopeElement.querySelectorAll(
-      "input:not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']), textarea, select, [contenteditable='true']"
+      "input:not([type='hidden']):not([type='button']):not([type='submit']):not([type='reset']), textarea, select, [contenteditable='true'], [contenteditable='plaintext-only'], [role='textbox']"
     );
     for (const el of candidates) {
       if (isFillable(el)) count++;
@@ -532,6 +641,8 @@
     };
 
     let filledCount = 0;
+    let preservedImageValues = 0;
+    let preservedSelectedFiles = 0;
     const formsFound = new Set();
 
     // 1. Fill Text Inputs & Textareas
@@ -541,6 +652,12 @@
 
     textInputs.forEach((input) => {
       if (!isFillable(input)) return;
+
+      const fieldDescriptor = getFieldDescriptor(input);
+      if (input.tagName !== "TEXTAREA" && IMAGE_FIELD_PATTERN.test(fieldDescriptor) && input.value.trim()) {
+        preservedImageValues++;
+        return;
+      }
 
       const generatedVal = (input.tagName === "TEXTAREA")
         ? getRandomItem(DATA.paragraphs)
@@ -577,16 +694,26 @@
     });
 
     // 3. Fill Radio Buttons (Grouped by name)
-    const radioGroups = {};
+    const radioGroups = new Map();
+    const formIds = new WeakMap();
+    let nextFormId = 0;
     const radios = scopeElement.querySelectorAll("input[type='radio']");
     radios.forEach((radio) => {
       if (!isFillable(radio)) return;
-      const groupKey = radio.name || `unnamed_radio_${Math.random()}`;
-      if (!radioGroups[groupKey]) radioGroups[groupKey] = [];
-      radioGroups[groupKey].push(radio);
+      let groupKey = radio;
+      if (radio.name) {
+        let formKey = "document";
+        if (radio.form) {
+          if (!formIds.has(radio.form)) formIds.set(radio.form, ++nextFormId);
+          formKey = formIds.get(radio.form);
+        }
+        groupKey = `${formKey}:${radio.name}`;
+      }
+      if (!radioGroups.has(groupKey)) radioGroups.set(groupKey, []);
+      radioGroups.get(groupKey).push(radio);
     });
 
-    Object.values(radioGroups).forEach((group) => {
+    radioGroups.forEach((group) => {
       const alreadyChecked = group.some((r) => r.checked);
       if (!alreadyChecked && group.length > 0) {
         const chosenRadio = getRandomItem(group);
@@ -617,64 +744,71 @@
     });
 
     // 5. Fill Contenteditable Elements (e.g. rich text editors)
-    const contentEditables = scopeElement.querySelectorAll("[contenteditable='true']");
+    const contentEditables = scopeElement.querySelectorAll(
+      "[contenteditable='true'], [contenteditable='plaintext-only'], [role='textbox']"
+    );
     contentEditables.forEach((ce) => {
-      if (ce.closest("#toolsId") || ce.closest("#tools-container")) return;
-      if (!ce.innerText || ce.innerText.trim() === "") {
-        ce.innerText = getRandomItem(DATA.paragraphs);
-        ce.dispatchEvent(new Event("input", { bubbles: true }));
+      if (ce.closest("#toolsId") || ce.closest("#tools-container") || ce.matches("input, textarea")) return;
+      const currentText = ce.innerText || ce.textContent || "";
+      if (!currentText.trim()) {
+        const generatedText = getRandomItem(DATA.paragraphs);
+        if ("value" in ce) {
+          setNativeValue(ce, generatedText);
+        } else {
+          ce.textContent = generatedText;
+          ce.dispatchEvent(new Event("input", { bubbles: true }));
+          ce.dispatchEvent(new Event("change", { bubbles: true }));
+        }
         highlightElement(ce);
         filledCount++;
+        const form = ce.closest("form");
+        if (form) formsFound.add(form);
       }
     });
 
-    // 6. Fill File Inputs for Images (e.g. <input type="file" accept="image/*">)
+    // 6. Fill file inputs with generated test files
     const fileInputs = scopeElement.querySelectorAll("input[type='file']");
+    let failedFileInputs = 0;
     fileInputs.forEach((fileInput) => {
       if (fileInput.closest("#toolsId") || fileInput.closest("#tools-container")) return;
       if (fileInput.disabled || fileInput.readOnly) return;
-      const accept = (fileInput.getAttribute("accept") || "").toLowerCase();
-      const desc = getFieldDescriptor(fileInput);
-      if (accept.includes("image") || /(photo|avatar|image|pic|img)/i.test(desc)) {
-        try {
-          const canvas = document.createElement("canvas");
-          canvas.width = 200;
-          canvas.height = 200;
-          const ctx = canvas.getContext("2d");
-          const grad = ctx.createLinearGradient(0, 0, 200, 200);
-          grad.addColorStop(0, "#4f46e5");
-          grad.addColorStop(1, "#06b6d4");
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, 200, 200);
-          ctx.fillStyle = "#ffffff";
-          ctx.font = "bold 20px sans-serif";
-          ctx.textAlign = "center";
-          ctx.fillText("ACHT Photo", 100, 105);
-
-          canvas.toBlob((blob) => {
-            if (!blob) return;
-            const file = new File([blob], "real-photo.png", { type: "image/png" });
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            fileInput.files = dt.files;
-            fileInput.dispatchEvent(new Event("change", { bubbles: true }));
-            fileInput.dispatchEvent(new Event("input", { bubbles: true }));
-            highlightElement(fileInput);
-            filledCount++;
-            if (fileInput.form) formsFound.add(fileInput.form);
-          }, "image/png");
-        } catch (e) {
-          // Ignore canvas errors
-        }
+      if (fileInput.files && fileInput.files.length > 0) {
+        preservedSelectedFiles++;
+        return;
+      }
+      try {
+        const file = createGeneratedFile(fileInput, getFieldDescriptor(fileInput));
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        fileInput.files = transfer.files;
+        fileInput.dispatchEvent(new Event("input", { bubbles: true }));
+        fileInput.dispatchEvent(new Event("change", { bubbles: true }));
+        highlightElement(fileInput);
+        filledCount++;
+        if (fileInput.form) formsFound.add(fileInput.form);
+      } catch (error) {
+        failedFileInputs++;
+        console.warn("[ACHT AutoFill] Could not fill file input:", error);
       }
     });
 
     // Provide user feedback
     if (filledCount > 0) {
       const formText = formsFound.size > 0 ? ` across ${formsFound.size} form(s)` : "";
-      showToast(`Auto filled ${filledCount} field(s)${formText}!`);
+      const preservedText = preservedImageValues + preservedSelectedFiles > 0
+        ? ` Preserved ${preservedImageValues + preservedSelectedFiles} existing image value(s) or file selection(s).`
+        : "";
+      const failedText = failedFileInputs > 0
+        ? ` ${failedFileInputs} file field(s) could not be filled.`
+        : "";
+      showToast(`Auto filled ${filledCount} field(s)${formText}!${preservedText}${failedText}`, failedFileInputs > 0);
     } else {
-      showToast("No fillable form inputs found on this page.", true);
+      const message = failedFileInputs > 0
+        ? `Could not fill ${failedFileInputs} file field(s). See console for details.`
+        : preservedImageValues + preservedSelectedFiles > 0
+          ? `No empty fields to fill. Preserved ${preservedImageValues + preservedSelectedFiles} existing image value(s) or file selection(s).`
+          : "No fillable form inputs found on this page.";
+      showToast(message, true);
     }
 
     updateAutoFillBtnState();

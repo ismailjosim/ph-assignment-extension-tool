@@ -25,6 +25,17 @@ const invokeRoute = (fnName, fallbackRef) => {
 
 const showRoutes = () => {
   const currentRoute = window.location.href;
+  const hostname = window.location.hostname.toLowerCase();
+  const isGoogleAuthPage = [
+    "accounts.google.com",
+    "consent.google.com",
+    "myaccount.google.com"
+  ].some((authHost) => hostname === authHost || hostname.endsWith(`.${authHost}`));
+
+  if (isGoogleAuthPage) {
+    document.getElementById("toolsId")?.replaceChildren();
+    return;
+  }
 
   if (currentRoute.includes("github.com")) {
     if (!invokeRoute("github", typeof github !== "undefined" ? github : null)) {
