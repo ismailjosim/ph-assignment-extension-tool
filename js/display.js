@@ -1,3 +1,29 @@
+const closeCurrentTab = () => {
+  if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+    chrome.runtime.sendMessage({ action: "ACHT_CLOSE_CURRENT_TAB" }, (response) => {
+      const error = chrome.runtime.lastError;
+      if (error || !response?.success) {
+        const message = error?.message || response?.error || "Could not close this tab.";
+        if (typeof window.showToast === "function") {
+          window.showToast(`Could not close this tab: ${message}`, true);
+        } else {
+          console.error("[ACHT] Could not close this tab:", message);
+        }
+      }
+    });
+    return;
+  }
+
+  const message = "Tab closing is only available in the extension.";
+  if (typeof window.showToast === "function") {
+    window.showToast(message, true);
+  } else {
+    console.warn(`[ACHT] ${message}`);
+  }
+};
+
+window.closeCurrentTab = closeCurrentTab;
+
 const displayButtons = (items, layoutMode) => {
   let btnsContainer = document.getElementById("toolsId");
   if (!btnsContainer) {
@@ -41,8 +67,12 @@ const displayButtons = (items, layoutMode) => {
 
   const closeBtn = document.getElementById("close-tab");
   if (closeBtn) {
-    closeBtn.addEventListener("click", function () {
-      window.close();
+    closeBtn.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof window.closeCurrentTab === "function") {
+        window.closeCurrentTab();
+      }
     });
   }
 

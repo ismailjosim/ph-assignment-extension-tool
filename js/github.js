@@ -495,7 +495,9 @@ const github = () => {
           break;
         case "ArrowLeft":
           e.preventDefault();
-          window.close();
+          if (typeof window.closeCurrentTab === "function") {
+            window.closeCurrentTab();
+          }
           break;
         default:
           break;

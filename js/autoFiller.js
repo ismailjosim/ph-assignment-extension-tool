@@ -186,9 +186,27 @@
       }
     }
 
+    if (element.labels) {
+      parts.push(...Array.from(element.labels, (label) => label.textContent || ""));
+    }
+
     const parentLabel = element.closest("label");
     if (parentLabel) {
       parts.push(parentLabel.textContent || "");
+    }
+
+    let ancestorDepth = 0;
+    for (let ancestor = element.parentElement; ancestor && ancestor !== document.body && ancestorDepth < 5; ancestor = ancestor.parentElement, ancestorDepth++) {
+      const labels = ancestor.querySelectorAll("label");
+      const controls = ancestor.querySelectorAll("input, textarea, select, [contenteditable='true']");
+      if (labels.length && (controls.length === 1 || labels.length === controls.length || ancestor.matches("fieldset, .form-group, .form-field, .field"))) {
+        const labelIndex = Array.from(controls).indexOf(element);
+        const matchingLabels = labels.length === controls.length && labelIndex >= 0
+          ? [labels[labelIndex]]
+          : Array.from(labels);
+        parts.push(...matchingLabels.map((label) => label.textContent || ""));
+        break;
+      }
     }
 
     return parts.join(" ").toLowerCase();
@@ -227,6 +245,68 @@
     // 2. Email Fields
     if (type === "email" || /(email|e-mail|mail)/i.test(desc)) {
       return `${context.firstName.toLowerCase()}.${context.lastName.toLowerCase()}${context.randomDigits}@${getRandomItem(DATA.domains)}`;
+    }
+
+    if (type === "date") {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}`;
+    }
+    if (type === "time") {
+      return "14:30";
+    }
+    if (type === "datetime-local") {
+      const today = new Date();
+      const yyyy = today.getFullYear();
+      const mm = String(today.getMonth() + 1).padStart(2, "0");
+      const dd = String(today.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}T14:30`;
+    }
+    if (type === "month") {
+      const today = new Date();
+      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
+    }
+    if (type === "week") {
+      const today = new Date();
+      const utcDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+      const dayFromMonday = (utcDate.getUTCDay() + 6) % 7;
+      utcDate.setUTCDate(utcDate.getUTCDate() - dayFromMonday + 3);
+      const firstThursday = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 4));
+      const week = 1 + Math.round((utcDate - firstThursday) / 604800000);
+      return `${utcDate.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
+    }
+    if (type === "color") {
+      return "#6366f1";
+    }
+    if (type === "range") {
+      const min = parseFloat(input.min || "0");
+      const max = parseFloat(input.max || "100");
+      return Math.round((min + max) / 2).toString();
+    }
+    if (type === "number") {
+      const min = input.min !== "" ? parseFloat(input.min) : null;
+      const max = input.max !== "" ? parseFloat(input.max) : null;
+      const step = input.step !== "" && !isNaN(parseFloat(input.step)) ? parseFloat(input.step) : 1;
+      let value;
+
+      if (/(age|years)/i.test(desc)) value = 24;
+      else if (/(quantity|qty|count|items)/i.test(desc)) value = 2;
+      else if (/(price|cost|budget|salary|amount|fee)/i.test(desc)) value = 49;
+      else if (min !== null && max !== null) value = Math.min(max, Math.max(min, min + step * 2));
+      else if (min !== null) value = min + step * 5;
+      else if (max !== null) value = Math.max(1, max - step);
+      else value = 10;
+
+      if (min !== null) value = Math.max(min, value);
+      if (max !== null) value = Math.min(max, value);
+      return value.toString();
+    }
+    if (type === "url" && !IMAGE_FIELD_PATTERN.test(desc)) {
+      if (/github/i.test(desc)) return `https://github.com/${context.firstName.toLowerCase()}-dev`;
+      if (/linkedin/i.test(desc)) return `https://linkedin.com/in/${context.firstName.toLowerCase()}-dev`;
+      return "https://developer-portfolio-showcase.netlify.app";
     }
 
     // 3. Name variations
@@ -273,6 +353,10 @@
       return getRandomItem(DATA.jobTitles);
     }
 
+    if (/(image|photo|picture).*(alt|caption|description)|(alt|caption|description).*(image|photo|picture)/i.test(desc)) {
+      return "A bright, welcoming creative studio with modern furnishings.";
+    }
+
     // 7. Image / Photo fields (type="url" or text or image with image/photo descriptor)
     if (IMAGE_FIELD_PATTERN.test(desc)) {
       const customImg = getCustomImageUrl();
@@ -299,69 +383,6 @@
       if (/github/i.test(desc)) return `https://github.com/${context.firstName.toLowerCase()}-dev`;
       if (/linkedin/i.test(desc)) return `https://linkedin.com/in/${context.firstName.toLowerCase()}-dev`;
       return "https://developer-portfolio-showcase.netlify.app";
-    }
-
-    // 9. Number inputs
-    if (type === "number") {
-      const min = input.min !== "" ? parseFloat(input.min) : null;
-      const max = input.max !== "" ? parseFloat(input.max) : null;
-      const step = input.step !== "" && !isNaN(parseFloat(input.step)) ? parseFloat(input.step) : 1;
-
-      if (/(age|years)/i.test(desc)) return "24";
-      if (/(quantity|qty|count|items)/i.test(desc)) return "2";
-      if (/(price|cost|budget|salary|amount|fee)/i.test(desc)) return "49";
-
-      if (min !== null && max !== null) {
-        const val = Math.min(max, Math.max(min, min + step * 2));
-        return val.toString();
-      }
-      if (min !== null) return (min + step * 5).toString();
-      if (max !== null) return (Math.max(1, max - step)).toString();
-      return "10";
-    }
-
-    // 9. Dates & Times
-    if (type === "date") {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-      return `${yyyy}-${mm}-${dd}`;
-    }
-    if (type === "time") {
-      return "14:30";
-    }
-    if (type === "datetime-local") {
-      const today = new Date();
-      const yyyy = today.getFullYear();
-      const mm = String(today.getMonth() + 1).padStart(2, "0");
-      const dd = String(today.getDate()).padStart(2, "0");
-      return `${yyyy}-${mm}-${dd}T14:30`;
-    }
-    if (type === "month") {
-      const today = new Date();
-      return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}`;
-    }
-    if (type === "week") {
-      const today = new Date();
-      const utcDate = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
-      const dayFromMonday = (utcDate.getUTCDay() + 6) % 7;
-      utcDate.setUTCDate(utcDate.getUTCDate() - dayFromMonday + 3);
-      const firstThursday = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 4));
-      const week = 1 + Math.round((utcDate - firstThursday) / 604800000);
-      return `${utcDate.getUTCFullYear()}-W${String(week).padStart(2, "0")}`;
-    }
-
-    // 10. Color
-    if (type === "color") {
-      return "#6366f1";
-    }
-
-    // 11. Range
-    if (type === "range") {
-      const min = parseFloat(input.min || "0");
-      const max = parseFloat(input.max || "100");
-      return Math.round((min + max) / 2).toString();
     }
 
     // 12. Search
@@ -637,7 +658,7 @@
       firstName,
       lastName,
       randomDigits: getRandomNumber(12, 99),
-      password: `Pass@${getRandomNumber(1000, 9999)}#`
+      password: "Pa$$w0rd!"
     };
 
     let filledCount = 0;

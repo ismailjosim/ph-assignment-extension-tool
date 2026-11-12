@@ -64,7 +64,8 @@ const liveSite = () => {
   }
 
   if (autoFillBtn) {
-    autoFillBtn.addEventListener("click", function () {
+    autoFillBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
       if (typeof window.autoFillForms === "function") {
         window.autoFillForms();
       }
@@ -113,7 +114,9 @@ const liveSite = () => {
         window.history.back();
       } else if (e.key === "ArrowLeft") {
         e.preventDefault();
-        window.close();
+        if (typeof window.closeCurrentTab === "function") {
+          window.closeCurrentTab();
+        }
       } else if (e.altKey && (e.key === "t" || e.key === "T")) {
         e.preventDefault();
         if (typeof window.togglePageTheme === "function") {

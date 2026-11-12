@@ -619,7 +619,7 @@ ${compactCross}
       }
       showToast("Scrolled to Top", "⬆️");
     } else {
-      const targetEl = findSubmitBtn() || findFeedbackBtn() || findMarkInput();
+      const targetEl = findMarkInput() || findSubmitBtn() || findFeedbackBtn();
       if (targetEl) {
         targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
       } else if (modalScrollArea.scrollTo) {
@@ -732,7 +732,7 @@ ${compactCross}
         }
       }
 
-      scrollToSection("down");
+      setTimeout(() => scrollToSection("down"), 100);
       showToast(`Feedback added & ${finalScore} marks set!`, "⚡");
     };
 
@@ -1144,6 +1144,31 @@ ${compactCross}
       return { rawCandidates, container: submissionData };
     };
 
+    const openLinksInTabs = (urls) => {
+      if (typeof chrome !== "undefined" && chrome.runtime?.sendMessage) {
+        chrome.runtime.sendMessage(
+          { action: "ACHT_OPEN_SUBMISSION_LINKS", urls },
+          (response) => {
+            const error = chrome.runtime.lastError;
+            if (error) {
+              showToast(`Could not open submitted links: ${error.message}`, "⚠️");
+            } else if (!response?.success) {
+              showToast(
+                `Opened ${response?.opened || 0} link(s); ${response?.failed || urls.length} could not be opened.`,
+                "⚠️",
+              );
+            }
+          },
+        );
+        return;
+      }
+
+      const blockedCount = urls.filter((url) => !window.open(url, "_blank")).length;
+      if (blockedCount > 0) {
+        showToast(`${blockedCount} submitted link(s) were blocked by the browser.`, "⚠️");
+      }
+    };
+
     const processAndOpenLinks = () => {
       const { rawCandidates, container } = extractCandidates();
       if (!container && rawCandidates.length === 0) {
@@ -1199,9 +1224,7 @@ ${compactCross}
           press.click();
         }
 
-        newUrlsToOpen.forEach((url) => {
-          window.open(url, "_blank");
-        });
+        openLinksInTabs(newUrlsToOpen);
       }
     };
 
@@ -1271,7 +1294,8 @@ ${compactCross}
 
   // press auto fill (Fake Filler)
   if (autoFillPortalBtn) {
-    autoFillPortalBtn.addEventListener("click", function () {
+    autoFillPortalBtn.addEventListener("click", function (event) {
+      event.stopPropagation();
       if (typeof window.autoFillForms === "function") {
         window.autoFillForms();
       }
