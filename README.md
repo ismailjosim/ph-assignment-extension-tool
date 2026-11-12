@@ -19,7 +19,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 - Targets the updated portal button (`.assignment-list-table__toolbar-button`) and confirms the SweetAlert dialog in a single click.
 
 ### 🔗 Automated Multi-Tab Link Opening & URL Auto-Repair
-- Clicking **Open** or pressing **`↑` (ArrowUp)** opens the assignment modal **and** automatically extracts both the student's GitHub Repository and Live Site links from `.assignment-evaluation-form__submission-data`, launching each into separate new tabs.
+- Clicking **Open** or pressing **`↑` (ArrowUp)** opens the assignment modal **and** automatically extracts every unique student-submitted repository or live-site link from `.assignment-evaluation-form__submission-data`, launching each into a separate new tab.
 - **Smart Protocol Auto-Repair**: If a student submits a naked domain without `https://` (e.g. `assignment-6-six-gamma.vercel.app` or `github.com/user/repo`), the extension automatically repairs and prepends `https://`, strips accidental portal relative paths (`web.programming-hero.com/...`), and opens the destination correctly!
 
 ### 🕒 GitHub Commit Analyzer & Smart Deadline Comparator
@@ -58,6 +58,7 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
   6. `6` - **Assignment গ্রহণযোগ্য নয়** (Substandard / incomplete requirements)
 - **Automatic Score & Editor Injection**: Instantly fills **`0`** marks into the mark input box and writes the polished Bengali feedback directly into CKEditor, Quill, Summernote, contenteditable, or textarea editors.
 - **Keyboard-First Experience**: Press **`0`** to launch the picker, then press **`1`** through **`6`** to select the reason instantly (or **`Esc`** to cancel).
+- **Split Repository Feedback**: When the current assignment requires both frontend/client and backend/server work but only one or no GitHub repository was submitted, the standard **Feedback** action appends a reminder to submit the missing repository.
 
 ### 📹 Google Meet Auto-Admit
 - Includes a dedicated auto-admit feature to automatically admit waiting students into Google Meet support sessions every 3 seconds.
@@ -97,13 +98,13 @@ A lightweight, powerful Chrome Extension engineered to streamline and accelerate
 2. Click **`Add`** to automatically select 10 assignments and assign them to yourself.
 3. Switch to your assigned tab, then click **`Open`** (or press **`↑`**):
    - The evaluation modal opens.
-   - The student's GitHub repo and Live Site open automatically in new tabs.
+   - Every unique repository and live-site link submitted by the student opens in a new tab.
 4. Review the live site preview tab (use the floating HUD to scroll Top/Bottom or close tab with `←`).
 5. Switch to the GitHub tab to review the commit history and deadline verification card.
 6. Return to the portal tab:
    - Press **`A`** (or click **`✓ All`**) to select all main rubric criteria.
    - Adjust any specific criterion if not met (e.g. uncheck sorting).
-   - Press **`Shift + F`** or **`←`** (or click **`⚡ Feedback`**) to transfer feedback into the editor and preserve/auto-fill marks (retains calculated score such as 57, or caps at 50 if deadline missed).
+   - Press **`Shift + F`** or **`←`** (or click **`⚡ Feedback`**) to transfer feedback into the editor and preserve/auto-fill marks (retains calculated score such as 57, or caps at 50 if deadline missed). For assignments requiring separate frontend/client and backend/server repositories, it also adds a reminder when one or both repository links are missing.
    - Or click **`60`** / **`50`** (or press **`1`** / **`4`**) for instant score presets.
    - **For 0 Marks & Feedback**: Press **`0`** (or click **`0`** on the dock), then select any of the 6 reasons with **`1`-`6`** (or mouse click). The mark is automatically set to 0 and the formatted feedback is injected.
    - Press **`Enter`** or **`→`** (or click **`Submit`**) to submit the score.

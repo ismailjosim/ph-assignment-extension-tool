@@ -265,21 +265,7 @@ ${compactCross}
 
   // Helper to insert feedback text into rich editors (CKEditor, Quill, Summernote) or textareas
   const insertFeedbackIntoEditor = (text) => {
-    const candidateEditors = [
-      document.querySelector(".ck-editor__editable"),
-      document.querySelector(".note-editable"),
-      document.querySelector(".ql-editor"),
-      document.querySelector(".assignment-evaluation-form [contenteditable='true']"),
-      document.querySelector(".modal [contenteditable='true']"),
-      ...document.querySelectorAll("[contenteditable='true']:not(#toolsId *)"),
-      document.querySelector("textarea[name*='feedback' i]"),
-      document.querySelector("textarea#feedback"),
-      document.querySelector(".assignment-evaluation-form textarea"),
-      document.querySelector(".modal textarea"),
-      ...document.querySelectorAll("textarea:not(#toolsId *)")
-    ].filter(Boolean);
-
-    const editor = candidateEditors[0];
+    const editor = findFeedbackEditor();
     if (!editor) {
       if (navigator.clipboard && navigator.clipboard.writeText) {
         navigator.clipboard.writeText(text);
@@ -454,6 +440,87 @@ ${compactCross}
     return null;
   };
 
+  const findFeedbackEditor = () => {
+    const candidateEditors = [
+      document.querySelector(".ck-editor__editable"),
+      document.querySelector(".note-editable"),
+      document.querySelector(".ql-editor"),
+      document.querySelector(".assignment-evaluation-form [contenteditable='true']"),
+      document.querySelector(".modal [contenteditable='true']"),
+      ...document.querySelectorAll("[contenteditable='true']:not(#toolsId *)"),
+      document.querySelector("textarea[name*='feedback' i]"),
+      document.querySelector("textarea#feedback"),
+      document.querySelector(".assignment-evaluation-form textarea"),
+      document.querySelector(".modal textarea"),
+      ...document.querySelectorAll("textarea:not(#toolsId *)")
+    ].filter(Boolean);
+
+    return candidateEditors[0] || null;
+  };
+
+  const getMissingSplitRepositoryFeedback = () => {
+    const submissionData = document.querySelector(
+      ".assignment-evaluation-form__submission-data, [class*='submission-data']"
+    );
+    const assignmentForm = document.querySelector(".assignment-evaluation-form");
+    if (!submissionData || !assignmentForm) return null;
+
+    const assignmentText = assignmentForm.innerText || assignmentForm.textContent || "";
+    const needsFrontend = /\bfront[\s-]?end\b|\bclient(?:-side)?\b/i.test(assignmentText);
+    const needsBackend = /\bback[\s-]?end\b|\bserver(?:-side)?\b/i.test(assignmentText);
+    if (!needsFrontend || !needsBackend) return null;
+
+    const submissionText = [
+      submissionData.innerText || submissionData.textContent || "",
+      ...Array.from(submissionData.querySelectorAll("a[href]"), (link) => link.getAttribute("href") || "")
+    ].join("\n");
+    const repositories = new Set();
+    const repositoryPattern = /github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)/gi;
+    let match;
+    while ((match = repositoryPattern.exec(submissionText)) !== null) {
+      repositories.add(match[1].replace(/\.git$/i, "").toLowerCase());
+    }
+
+    if (repositories.size >= 2) return null;
+
+    const missingDescription = repositories.size === 0
+      ? "Frontend (Client) ও Backend (Server)—কোনো GitHub repository-ই পাওয়া যায়নি"
+      : "Frontend (Client) ও Backend (Server)—দুটি repository-র মধ্যে একটি জমা দেওয়া হয়নি";
+
+    return `\n\nআপনার এই অ্যাসাইনমেন্টে Frontend (Client) এবং Backend (Server)-এর জন্য পৃথক GitHub repository জমা দেওয়া প্রয়োজন। ${missingDescription}। অনুগ্রহ করে বাদ পড়া repository-টি জমা দিয়ে Recheck-এর জন্য অনুরোধ করুন।`;
+  };
+
+  const appendFeedbackToEditor = (text) => {
+    const editor = findFeedbackEditor();
+    if (!editor) return false;
+
+    const currentText = editor.isContentEditable
+      ? (editor.innerText || editor.textContent || "")
+      : (editor.value || "");
+    if (currentText.includes(text.trim())) return true;
+
+    if (editor.isContentEditable || editor.getAttribute("contenteditable") === "true") {
+      const formattedHtml = `<p>${text.trim().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/\n/g, "<br>")}</p>`;
+      if (editor.ckeditorInstance && typeof editor.ckeditorInstance.getData === "function" && typeof editor.ckeditorInstance.setData === "function") {
+        editor.ckeditorInstance.setData(`${editor.ckeditorInstance.getData()}${formattedHtml}`);
+      } else {
+        editor.insertAdjacentHTML("beforeend", formattedHtml);
+      }
+    } else {
+      const newValue = `${currentText.trim()}${currentText.trim() ? "\n\n" : ""}${text.trim()}`;
+      const prototypeValueSetter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(editor), "value")?.set;
+      if (prototypeValueSetter) {
+        prototypeValueSetter.call(editor, newValue);
+      } else {
+        editor.value = newValue;
+      }
+    }
+
+    editor.dispatchEvent(new Event("input", { bubbles: true }));
+    editor.dispatchEvent(new Event("change", { bubbles: true }));
+    return true;
+  };
+
   // Find the 'Give Mark' input box
   const findMarkInput = () => {
     let input =
@@ -601,11 +668,19 @@ ${compactCross}
   const smartFeedbackAndScore = (forcedScore) => {
     // 1. Capture existing calculated mark before clicking feedback
     const preExistingMark = getCalculatedOrExistingMark();
+    const missingRepositoryFeedback = getMissingSplitRepositoryFeedback();
 
     // 2. Click "Add to feedback editor"
     const fbBtn = findFeedbackBtn();
     if (fbBtn) {
       fbBtn.click();
+    }
+    if (missingRepositoryFeedback) {
+      setTimeout(() => {
+        if (!appendFeedbackToEditor(missingRepositoryFeedback)) {
+          showToast("Could not add missing-repository feedback: feedback editor not found", "⚠️");
+        }
+      }, 250);
     }
 
     // Helper to evaluate and apply the appropriate score
@@ -857,8 +932,6 @@ ${compactCross}
 
     const firstRow = open ? open.closest("tr") : document.querySelector("tbody tr");
     const openedUrls = new Set();
-    let hasOpenedGitHub = false;
-    let hasOpenedLive = false;
     let hasToggledLiveMenu = false;
 
     // Disallowed file extensions (files from rubric instructions or text, NOT websites)
@@ -955,7 +1028,7 @@ ${compactCross}
         if (parsed.hostname.toLowerCase().includes("github.com")) {
           path = path.replace(/\.git$/i, "");
         }
-        return `${parsed.protocol}//${parsed.hostname.toLowerCase()}${parsed.port ? ":" + parsed.port : ""}${path}${parsed.search}`;
+        return `${parsed.protocol}//${parsed.hostname.toLowerCase()}${parsed.port ? ":" + parsed.port : ""}${path}${parsed.search}${parsed.hash}`;
       } catch (e) {
         return u.replace(/\/+$/, "").toLowerCase();
       }
@@ -1024,10 +1097,15 @@ ${compactCross}
       trackAndOpenLiveMenu(submissionData);
 
       const rawCandidates = [];
-      const searchScopes = [
-        submissionData,
-        ...document.querySelectorAll(".dropdown-menu.show, .dropdown-menu")
-      ].filter(Boolean);
+      const searchScopes = [submissionData];
+      const liveLinkButton = findLiveLinkMenuBtn(submissionData);
+      const liveDropdownParent = liveLinkButton
+        ? liveLinkButton.closest(".dropdown") || liveLinkButton.parentElement
+        : null;
+      const liveDropdownMenu = liveDropdownParent
+        ? liveDropdownParent.querySelector(".dropdown-menu")
+        : null;
+      if (liveDropdownMenu) searchScopes.push(liveDropdownMenu);
 
       searchScopes.forEach((scope) => {
         // 1. Anchors (extract href only, never innerText)
@@ -1075,9 +1153,6 @@ ${compactCross}
       const newUrlsToOpen = [];
 
       rawCandidates.forEach((candidate) => {
-        // Cap opened tabs to at most 3
-        if (openedUrls.size + newUrlsToOpen.length >= 3) return;
-
         const cleaned = cleanAndNormalizeUrl(candidate);
         if (cleaned) {
           try {
@@ -1094,12 +1169,6 @@ ${compactCross}
             if (!openedUrls.has(key)) {
               openedUrls.add(key);
               newUrlsToOpen.push(cleaned);
-
-              if (host.includes("github.com")) {
-                hasOpenedGitHub = true;
-              } else {
-                hasOpenedLive = true;
-              }
             }
           } catch (e) {
             // invalid URL
@@ -1134,22 +1203,17 @@ ${compactCross}
           window.open(url, "_blank");
         });
       }
-
-      // Complete if both GitHub and Live are open, or if we hit the tab limit
-      return (hasOpenedGitHub && hasOpenedLive) || openedUrls.size >= 2;
     };
 
-    // Try immediately
-    const immediateComplete = processAndOpenLinks();
-    if (immediateComplete) return;
+    // Try immediately, then keep checking briefly for links rendered asynchronously.
+    processAndOpenLinks();
 
     // Poll briefly (up to 15 attempts = 1.8s) for async elements to settle, then stop cleanly
     let attempts = 0;
     const trackerInterval = setInterval(() => {
       attempts++;
-      const isComplete = processAndOpenLinks();
-      // Stop if complete, or if at least one URL has been opened after 10 attempts, or max 15 attempts reached
-      if (isComplete || (openedUrls.size > 0 && attempts >= 10) || attempts >= 15) {
+      processAndOpenLinks();
+      if (attempts >= 15) {
         clearInterval(trackerInterval);
       }
     }, 120);
@@ -1539,5 +1603,3 @@ ${compactCross}
 };
 
 window.iPortal = iPortal;
-
-
